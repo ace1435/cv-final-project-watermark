@@ -63,7 +63,7 @@ sources:
     dest: screenspot_pro
     license: MIT
     domain: screen
-    category: ui_desktop
+    category: ui_desktop_pro
   - name: visualwebbench
     kind: hf
     repo: visualwebbench/VisualWebBench
