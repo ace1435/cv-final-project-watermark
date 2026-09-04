@@ -86,8 +86,9 @@ sources:
   - name: arxiv_cc_by
     kind: arxiv
     set: cs
-    from: "2024-03-04"
-    until: "2024-03-06"
+    from: "2024-03-01"
+    until: "2024-03-31"
+    id_prefix: "2403."
     licenses:
       - http://creativecommons.org/licenses/by/4.0/
     max_candidates: 200

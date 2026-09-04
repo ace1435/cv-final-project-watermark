@@ -11,7 +11,7 @@ from wmbench.fetch import fetch_bytes, fetch_file, fetch_json
 
 root = Path(__file__).resolve().parents[1]
 manifests = root / "data" / "manifests"
-config = yaml.safe_load((root / "configs" / "datasets.yaml").read_text())
+config = yaml.safe_load((root / "configs" / "datasets.yaml").read_text(encoding="utf-8"))
 ns = {"oai": "http://www.openarchives.org/OAI/2.0/", "arxiv": "http://arxiv.org/OAI/arXiv/"}
 pins_path = manifests / "sources.csv"
 pin_fields = ["source", "file", "url", "sha256", "size", "license"]
@@ -20,14 +20,15 @@ pin_fields = ["source", "file", "url", "sha256", "size", "license"]
 def load_pins():
     pins = {}
     if pins_path.exists():
-        with open(pins_path, newline="") as f:
+        with open(pins_path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 pins[row["file"]] = row
     return pins
 
 
 def save_pins(pins):
-    with open(pins_path, "w", newline="") as f:
+    manifests.mkdir(parents=True, exist_ok=True)
+    with open(pins_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=pin_fields)
         w.writeheader()
         for key in sorted(pins):
@@ -61,11 +62,13 @@ def oai_records(source):
 def arxiv_candidates(source):
     path = manifests / "arxiv_candidates.csv"
     if path.exists():
-        with open(path, newline="") as f:
+        with open(path, newline="", encoding="utf-8") as f:
             return list(csv.DictReader(f))
     records = [r for r in oai_records(source) if r["license"] in source["licenses"]]
+    records = [r for r in records if r["id"].startswith(source["id_prefix"])]
     records = sorted(records, key=lambda r: r["id"])[: source["max_candidates"]]
-    with open(path, "w", newline="") as f:
+    manifests.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["id", "license", "title"])
         w.writeheader()
         w.writerows(records)
