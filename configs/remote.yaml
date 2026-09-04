@@ -1,0 +1,5 @@
+host: vm28
+remote: vm
+work: /home/student/work
+venv: /home/student/venv
+data: /home/student/data

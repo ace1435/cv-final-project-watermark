@@ -1,0 +1,10 @@
+numpy==1.26.4
+pillow==12.3.0
+opencv-python-headless==4.11.0.86
+pyyaml==6.0.3
+pytest==9.1.1
+pymupdf==1.28.2
+pyarrow==25.0.1
+playwright==1.62.0
+torch==2.14.0
+torchvision==0.29.0
