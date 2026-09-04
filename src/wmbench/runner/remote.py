@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 
 root = Path(__file__).resolve().parents[3]
-config = yaml.safe_load((root / "configs" / "remote.yaml").read_text())
+config = yaml.safe_load((root / "configs" / "remote.yaml").read_text(encoding="utf-8"))
 
 
 def run(cmd, check=True):

@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from wmbench.fetch import fetch_bytes, fetch_file, fetch_json
+from wmbench.manifest import read_rows
 
 root = Path(__file__).resolve().parents[1]
 manifests = root / "data" / "manifests"
@@ -108,14 +109,30 @@ def download_source(source, sources_root, pins):
     return count
 
 
+def download_manifest(path, sources_root, pins):
+    wanted = sorted({row["file"] for row in read_rows(path)})
+    count = 0
+    for rel in wanted:
+        pin = pins[rel]
+        got = fetch_file(pin["url"], sources_root / rel, pin["sha256"])
+        print(rel, got, flush=True)
+        count += 1
+    return count
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", default="data/images")
     parser.add_argument("--only", nargs="*")
+    parser.add_argument("--manifest")
     args = parser.parse_args()
     sources_root = Path(args.data_root) / "sources"
     pins = load_pins()
     total = 0
+    if args.manifest:
+        total = download_manifest(args.manifest, sources_root, pins)
+        print("files", total)
+        return
     for source in config["sources"]:
         if args.only and source["name"] not in args.only:
             continue
