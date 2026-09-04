@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from wmbench.fetch import fetch_bytes, fetch_file, fetch_json
+from wmbench.fetch import fetch_bytes, fetch_file, fetch_json, hf_url
 from wmbench.manifest import read_rows
 
 root = Path(__file__).resolve().parents[1]
@@ -34,10 +34,6 @@ def save_pins(pins):
         w.writeheader()
         for key in sorted(pins):
             w.writerow(pins[key])
-
-
-def hf_url(repo, name):
-    return f"https://huggingface.co/datasets/{repo}/resolve/main/{name}"
 
 
 def hf_listing(repo):

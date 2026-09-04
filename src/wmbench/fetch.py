@@ -2,10 +2,15 @@ import hashlib
 import json
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
 agent = {"User-Agent": "wmbench/0.1 (research benchmark)"}
+
+
+def hf_url(repo, name):
+    return f"https://huggingface.co/datasets/{repo}/resolve/main/{urllib.parse.quote(name)}"
 
 
 def sha256_of(path):

@@ -9,6 +9,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 import yaml
 
+from wmbench.fetch import hf_url
 from wmbench.manifest import read_rows, write_rows
 from wmbench.prep import image_size, pdf_size
 
@@ -45,10 +46,6 @@ null_total = 5000
 null_photo = ["pro", "mobile", "div2k"]
 null_ui = ["ui_mobile", "ui_desktop_pro", "ui_desktop_v2", "ui_web", "ui_web_v2"]
 null_doc = ["doc_doclaynet"]
-
-
-def hf_url(repo, name):
-    return f"https://huggingface.co/datasets/{repo}/resolve/main/{name}"
 
 
 class pool:
