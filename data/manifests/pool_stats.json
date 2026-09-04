@@ -1,0 +1,60 @@
+{
+  "arxiv_cc_by": {
+    "kept": 200,
+    "scanned": 200
+  },
+  "clic2020_mobile_train": {
+    "kept": 1032,
+    "scanned": 1048,
+    "too_small": 16
+  },
+  "clic2020_mobile_valid": {
+    "kept": 60,
+    "scanned": 61,
+    "too_small": 1
+  },
+  "clic2020_professional_train": {
+    "junk": 7,
+    "kept": 551,
+    "scanned": 585,
+    "too_small": 34
+  },
+  "clic2020_professional_valid": {
+    "junk": 4,
+    "kept": 37,
+    "scanned": 41,
+    "too_small": 4
+  },
+  "div2k_train": {
+    "kept": 800,
+    "scanned": 800
+  },
+  "div2k_valid": {
+    "kept": 100,
+    "scanned": 100
+  },
+  "doclaynet": {
+    "kept": 6489,
+    "scanned": 6489
+  },
+  "screenspot_pro": {
+    "duplicate": 32,
+    "kept": 1553,
+    "scanned": 1585
+  },
+  "screenspot_v2": {
+    "duplicate": 3,
+    "kept": 577,
+    "scanned": 699,
+    "too_small": 119,
+    "ui_desktop_v2_png": 231,
+    "ui_mobile_jpg": 31,
+    "ui_mobile_png": 217,
+    "ui_web_v2_png": 251
+  },
+  "visualwebbench": {
+    "duplicate": 360,
+    "kept": 134,
+    "scanned": 494
+  }
+}
