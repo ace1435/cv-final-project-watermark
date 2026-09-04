@@ -1,3 +1,4 @@
+import hashlib
 import io
 
 import pymupdf
@@ -55,6 +56,13 @@ def prepare(data, is_pdf, long_side, dpi):
 def save_png(img, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, format="PNG", icc_profile=None)
+
+
+def pixel_sha256(path):
+    with Image.open(path) as img:
+        rgb = img.convert("RGB")
+        head = f"{rgb.width}x{rgb.height}".encode()
+        return hashlib.sha256(head + rgb.tobytes()).hexdigest()
 
 
 def png_chunks(path):

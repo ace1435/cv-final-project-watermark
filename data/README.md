@@ -15,9 +15,11 @@ under the data root is committed except the manifests in `data/manifests/`.
 | `smoke.csv` | 50 | 25 photos and 25 screens drawn from the test set with seed 0 |
 | `null.csv` | 5000 | Unwatermarked images for threshold calibration, disjoint from the test set, seed 43 |
 
-Each split row carries `out_sha256`, the checksum of the preprocessed 1024 px PNG, so any machine
-can check its own copy with `python data/preprocess.py --manifest data/manifests/smoke.csv` followed
-by `git diff data/manifests/smoke.csv`.
+Each split row carries `out_sha256`, the checksum of the decoded RGB pixels of the preprocessed
+1024 px image together with its size. Pixels are hashed instead of file bytes because PNG
+compression differs between zlib builds while the pixels do not. Any machine can check its own copy
+with `python data/preprocess.py --manifest data/manifests/smoke.csv` followed by
+`git diff data/manifests/smoke.csv`.
 
 ## Test set composition
 

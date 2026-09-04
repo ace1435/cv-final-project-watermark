@@ -8,9 +8,8 @@ from pathlib import Path
 import pyarrow.parquet as pq
 import yaml
 
-from wmbench.fetch import sha256_of
 from wmbench.manifest import read_rows, write_rows
-from wmbench.prep import prepare, save_png
+from wmbench.prep import pixel_sha256, prepare, save_png
 
 root = Path(__file__).resolve().parents[1]
 config = yaml.safe_load((root / "configs" / "datasets.yaml").read_text(encoding="utf-8"))
@@ -58,7 +57,7 @@ def work(task):
         raise RuntimeError(f"source sha256 mismatch for {row['id']}")
     img = prepare(data, is_pdf(row), long_side, dpi)
     save_png(img, dest)
-    return row["id"], sha256_of(dest)
+    return row["id"], pixel_sha256(dest)
 
 
 def main():
@@ -74,7 +73,7 @@ def main():
     for row in rows:
         dest = out_path(args.data_root, row)
         if dest.exists():
-            done[row["id"]] = sha256_of(dest)
+            done[row["id"]] = pixel_sha256(dest)
         else:
             todo.append(row)
     tasks = ((row, data, out_path(args.data_root, row)) for row, data in iter_tasks(todo, sources_root))

@@ -3,7 +3,7 @@ import io
 import pymupdf
 from PIL import Image
 
-from wmbench.prep import image_size, pdf_size, png_chunks, png_meta_chunks, prepare, save_png
+from wmbench.prep import image_size, pdf_size, pixel_sha256, png_chunks, png_meta_chunks, prepare, save_png
 
 
 def jpeg_with_orientation(size, orientation):
@@ -46,6 +46,16 @@ def test_alpha_composited_on_white_and_chunks_stripped(tmp_path):
     assert chunks[0] == b"IHDR"
     assert chunks[-1] == b"IEND"
     assert not any(c in png_meta_chunks for c in chunks)
+
+
+def test_pixel_hash_ignores_png_compression(tmp_path):
+    img = prepare(png_with_gamma((1500, 1000)), False, 1024, 150)
+    fast = tmp_path / "fast.png"
+    small = tmp_path / "small.png"
+    img.save(fast, format="PNG", compress_level=1)
+    img.save(small, format="PNG", compress_level=9)
+    assert fast.read_bytes() != small.read_bytes()
+    assert pixel_sha256(fast) == pixel_sha256(small)
 
 
 def test_pdf_render_size():
