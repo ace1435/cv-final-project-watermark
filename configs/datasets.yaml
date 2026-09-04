@@ -1,0 +1,98 @@
+long_side: 1024
+render_dpi: 150
+
+sources:
+  - name: clic2020_professional_valid
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/clic/professional_valid_2020.zip
+    dest: clic2020/professional_valid_2020.zip
+    license: Unsplash License
+    domain: photo
+    category: pro
+  - name: clic2020_professional_train
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/clic/professional_train_2020.zip
+    dest: clic2020/professional_train_2020.zip
+    license: Unsplash License
+    domain: photo
+    category: pro
+  - name: clic2020_mobile_valid
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/clic/mobile_valid_2020.zip
+    dest: clic2020/mobile_valid_2020.zip
+    license: CC0 1.0
+    domain: photo
+    category: mobile
+  - name: clic2020_mobile_train
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/clic/mobile_train_2020.zip
+    dest: clic2020/mobile_train_2020.zip
+    license: CC0 1.0
+    domain: photo
+    category: mobile
+  - name: div2k_train
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip
+    dest: div2k/DIV2K_train_HR.zip
+    license: academic research only, null set only, never published
+    domain: photo
+    category: div2k
+  - name: div2k_valid
+    kind: file
+    url: https://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_valid_HR.zip
+    dest: div2k/DIV2K_valid_HR.zip
+    license: academic research only, null set only, never published
+    domain: photo
+    category: div2k
+  - name: screenspot_v2
+    kind: hf
+    repo: OS-Copilot/ScreenSpot-v2
+    files:
+      - screenspotv2_image.zip
+      - screenspot_mobile_v2.json
+      - screenspot_desktop_v2.json
+      - screenspot_web_v2.json
+    dest: screenspot_v2
+    license: Apache-2.0
+    domain: screen
+    category: ui
+  - name: screenspot_pro
+    kind: hf
+    repo: likaixin/ScreenSpot-Pro
+    prefix: images/
+    dest: screenspot_pro
+    license: MIT
+    domain: screen
+    category: ui_desktop_pro
+  - name: visualwebbench
+    kind: hf
+    repo: visualwebbench/VisualWebBench
+    files:
+      - web_caption/test-00000-of-00001.parquet
+      - heading_ocr/test-00000-of-00001.parquet
+      - webqa/test-00000-of-00001.parquet
+    dest: visualwebbench
+    license: Apache-2.0
+    domain: screen
+    category: ui_web
+  - name: doclaynet
+    kind: hf
+    repo: docling-project/DocLayNet-v1.2
+    prefix: data/validation-
+    dest: doclaynet
+    license: CDLA-Permissive-1.0
+    domain: screen
+    category: doc_doclaynet
+  - name: arxiv_cc_by
+    kind: arxiv
+    set: cs
+    from: "2024-03-01"
+    until: "2024-03-31"
+    id_prefix: "2403."
+    licenses:
+      - http://creativecommons.org/licenses/by/4.0/
+    max_candidates: 200
+    dest: arxiv
+    license: CC BY 4.0
+    domain: screen
+    category: doc_arxiv
