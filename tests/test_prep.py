@@ -1,6 +1,6 @@
 import io
 
-import fitz
+import pymupdf
 from PIL import Image
 
 from wmbench.prep import image_size, pdf_size, png_chunks, png_meta_chunks, prepare, save_png
@@ -23,7 +23,7 @@ def png_with_gamma(size):
 
 
 def pdf_bytes():
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page(width=595, height=842)
     page.insert_text((72, 72), "hello")
     return doc.tobytes()

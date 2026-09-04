@@ -1,6 +1,6 @@
 import io
 
-import fitz
+import pymupdf
 from PIL import Image, ImageOps
 
 png_meta_chunks = (b"gAMA", b"iCCP", b"cHRM", b"sRGB", b"pHYs", b"eXIf")
@@ -24,14 +24,14 @@ def resize_long(img, long_side):
 
 
 def render_pdf(data, dpi, page_no=0):
-    doc = fitz.open(stream=data, filetype="pdf")
+    doc = pymupdf.open(stream=data, filetype="pdf")
     index = min(page_no, len(doc) - 1)
     pix = doc[index].get_pixmap(dpi=dpi, alpha=False)
     return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
 
 def pdf_size(data, dpi):
-    doc = fitz.open(stream=data, filetype="pdf")
+    doc = pymupdf.open(stream=data, filetype="pdf")
     rect = doc[0].rect
     return round(rect.width / 72 * dpi), round(rect.height / 72 * dpi)
 

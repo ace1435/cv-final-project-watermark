@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 import yaml
+from PIL import UnidentifiedImageError
 
 from wmbench.fetch import hf_url
 from wmbench.manifest import read_rows, write_rows
@@ -61,7 +62,11 @@ class pool:
         if sha in self.seen:
             self.stats[name]["duplicate"] += 1
             return
-        w, h = pdf_size(data, dpi) if is_pdf else image_size(data)
+        try:
+            w, h = pdf_size(data, dpi) if is_pdf else image_size(data)
+        except (UnidentifiedImageError, RuntimeError, ValueError):
+            self.stats[name]["unreadable"] += 1
+            return
         if max(w, h) < long_side:
             self.stats[name]["too_small"] += 1
             return
@@ -83,10 +88,17 @@ class pool:
         })
 
 
+def is_junk(name):
+    base = name.rsplit("/", 1)[-1]
+    return name.startswith("__MACOSX/") or base.startswith(".")
+
+
 def scan_zip(p, source, sources_root):
     with zipfile.ZipFile(sources_root / source["dest"]) as z:
         for name in sorted(z.namelist()):
-            if name.lower().endswith(".png"):
+            if is_junk(name):
+                p.stats[source["name"]]["junk"] += 1
+            elif name.lower().endswith(".png"):
                 p.add(source, source["category"], "", source["dest"], name, source["url"], z.read(name))
             elif not name.endswith("/"):
                 p.stats[source["name"]]["not_png"] += 1
@@ -103,7 +115,7 @@ def scan_screenspot_v2(p, source, sources_root):
     with zipfile.ZipFile(sources_root / zip_rel) as z:
         for name in sorted(z.namelist()):
             key = name.rsplit("/", 1)[-1]
-            if key not in groups:
+            if key not in groups or is_junk(name):
                 continue
             category, subcategory = groups[key]
             if not key.lower().endswith(".png"):
@@ -116,7 +128,7 @@ def scan_screenspot_v2(p, source, sources_root):
 def scan_screenspot_pro(p, source, sources_root):
     base = sources_root / source["dest"]
     for path in sorted(base.rglob("*")):
-        if not path.is_file():
+        if not path.is_file() or path.name.startswith("."):
             continue
         rel = path.relative_to(sources_root).as_posix()
         name = path.relative_to(base).as_posix()

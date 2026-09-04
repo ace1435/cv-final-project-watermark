@@ -32,7 +32,7 @@ def push(branch):
 
 def launch(name, command):
     log = f"{config['data']}/logs/{name}.log"
-    inner = f"cd {config['work']} && . {config['venv']}/bin/activate && {command} > {log} 2>&1"
+    inner = f"cd {config['work']} && . {config['venv']}/bin/activate && ({command}) > {log} 2>&1"
     ssh(f"tmux new-session -d -s {name} {shlex.quote(inner)}")
     print(f"launched tmux {name} with log {log}")
 
