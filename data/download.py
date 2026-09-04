@@ -30,7 +30,7 @@ def load_pins():
 def save_pins(pins):
     manifests.mkdir(parents=True, exist_ok=True)
     with open(pins_path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=pin_fields)
+        w = csv.DictWriter(f, fieldnames=pin_fields, lineterminator="\n")
         w.writeheader()
         for key in sorted(pins):
             w.writerow(pins[key])
@@ -66,7 +66,7 @@ def arxiv_candidates(source):
     records = sorted(records, key=lambda r: r["id"])[: source["max_candidates"]]
     manifests.mkdir(parents=True, exist_ok=True)
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["id", "license", "title"])
+        w = csv.DictWriter(f, fieldnames=["id", "license", "title"], lineterminator="\n")
         w.writeheader()
         w.writerows(records)
     return records
