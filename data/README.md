@@ -62,7 +62,8 @@ resize. Pillow and PyMuPDF versions are pinned in `environment/requirements.txt`
 
 The PC keeps `data/images/` outside git. The smoke images arrive either by copying them from the VM
 or by running the two commands in the top level README, which download only the archives the
-smoke rows reference.
+smoke rows reference. A smoke rebuild on a fresh clone downloads about 9.7 GB, most of it two
+CLIC archives, and the archives can be deleted once the 50 images exist.
 
 ## Cleanup
 
