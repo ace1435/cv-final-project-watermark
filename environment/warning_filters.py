@@ -16,6 +16,16 @@ entries = [
         "Importing from timm.models.layers is deprecated",
         "VideoSeal imports layers through the old timm path, which timm 0.9.16 still provides",
     ),
+    (
+        "torchvision.models._utils",
+        "The parameter 'pretrained' is deprecated",
+        "lpips 0.1.4 loads its AlexNet backbone with the old argument, which torchvision 0.29 still honours",
+    ),
+    (
+        "torchvision.models._utils",
+        "Arguments other than a weight enum or `None` for 'weights' are deprecated",
+        "same lpips 0.1.4 call, torchvision maps pretrained=True to the default weights",
+    ),
 ]
 
 

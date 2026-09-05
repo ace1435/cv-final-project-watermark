@@ -32,7 +32,8 @@ class dwtdct(base):
         marked = self.make(bits, strength).encode(bgr)
         return cv2.cvtColor(marked, cv2.COLOR_BGR2RGB)
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
+        scale = self.native_strength if strength is None else strength
         bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        votes = self.make([0] * self.nbits, self.native_strength).decode_scores(bgr)
+        votes = self.make([0] * self.nbits, scale).decode_scores(bgr)
         return 2.0 * votes - 1.0

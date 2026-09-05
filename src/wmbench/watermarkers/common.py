@@ -50,7 +50,7 @@ class base:
     def embed(self, img, bits, strength):
         raise NotImplementedError
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
         raise NotImplementedError
 
     def residual(self, img, bits, strength=None):

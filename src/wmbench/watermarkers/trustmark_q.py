@@ -22,7 +22,7 @@ class trustmark_q(base):
         out = self.tm.encode(Image.fromarray(img), text, MODE="binary", WM_STRENGTH=strength)
         return np.asarray(out, dtype=np.uint8)
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
         pil = self.tm.get_the_image_for_processing(Image.fromarray(img))
         pil = pil.resize((self.tm.model_resolution_dec, self.tm.model_resolution_dec), Image.BILINEAR)
         x = transforms.ToTensor()(pil).unsqueeze(0).to(self.tm.decoder.device) * 2.0 - 1.0

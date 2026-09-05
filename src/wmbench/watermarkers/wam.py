@@ -51,7 +51,7 @@ class wam(base):
             preds = self.model.detect(x)["preds"]
         return preds[0, 0], preds[0, 1:]
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
         mask, bits = self.detect_maps(img)
         weight = torch.sigmoid(mask)
         soft = (bits * weight).sum(dim=(1, 2)) / weight.sum().clamp_min(1e-6)

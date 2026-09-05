@@ -48,7 +48,7 @@ class pixelseal(base):
             preds = self.model.detect(x, is_video=False)["preds"]
         return preds[0].float().cpu().numpy()
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
         return self.detect(img)[1:]
 
     def detect_logit(self, img):

@@ -22,7 +22,7 @@ class hidden(base):
         delta = marked - x
         return to_uint8(unnormalize(x + strength * delta))
 
-    def decode(self, img):
+    def decode(self, img, strength=None):
         x = normalize(to_tensor(img, self.device))
         with torch.no_grad():
             logits = self.decoder(x)
