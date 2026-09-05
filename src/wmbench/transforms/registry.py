@@ -2,7 +2,7 @@ import hashlib
 
 import numpy as np
 
-from wmbench.transforms import platforms, tier1
+from wmbench.transforms import chains, platforms, screenshots, tier1
 
 
 class condition:
@@ -15,15 +15,25 @@ class condition:
     def apply(self, img, cover, rng):
         if self.kind == "tier1":
             return tier1.apply(self.family, self.level, img, cover, rng)
-        return platforms.apply(self.family, img, self.level)
+        if self.kind == "platform":
+            return platforms.apply(self.family, img, self.level)
+        if self.kind == "screenshot":
+            return screenshots.render(self.family, img, rng)
+        return chains.apply(self.family, img, cover, rng)
 
     def inverse(self, params, shape):
         if self.kind == "tier1":
             return tier1.inverse(self.family, params, shape)
-        return platforms.inverse(params, shape)
+        if self.kind == "platform":
+            return platforms.inverse(params, shape)
+        if self.kind == "screenshot":
+            return screenshots.inverse(params, shape)
+        return chains.inverse(params, shape)
 
     def geometric(self):
-        return self.kind == "tier1" and tier1.families[self.family]["geometric"]
+        if self.kind == "tier1":
+            return tier1.families[self.family]["geometric"]
+        return self.kind in ("screenshot", "chain")
 
 
 def conditions(groups, smoke=False):
@@ -34,6 +44,12 @@ def conditions(groups, smoke=False):
     if "platform" in groups:
         for name, q in platforms.conditions(smoke):
             out.append(condition(platforms.condition_name(name, q), name, q, "platform"))
+    if "screenshot" in groups:
+        for name in screenshots.conditions:
+            out.append(condition(name, name, None, "screenshot"))
+    if "chain" in groups:
+        for name in chains.chains:
+            out.append(condition(name, name, None, "chain"))
     return out
 
 
