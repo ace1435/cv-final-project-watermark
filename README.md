@@ -87,6 +87,28 @@ where it stopped. The second writes `results/summary/quality_smoke.csv`, the per
 timing file and `results/tables/quality_smoke.tex`. The third writes the residual strips under
 `results/summary/samples/`.
 
+## Transforms
+
+The sharing actions live in `src/wmbench/transforms/`. `tier1.py` implements the single actions
+listed in `configs/transforms.yaml`, `platforms.py` the platform profiles in
+`configs/platforms.yaml`, and `registry.py` turns both into named conditions. Every transform
+returns the output image and its exact parameters, and `inverse` turns those parameters into a
+matrix that maps the original 1024 px grid to the output grid plus a mask of the original pixels
+that survived. `src/wmbench/realign/oracle.py` uses that matrix to put a transformed image back
+into the original grid, filling lost regions with the cover. The tests check that this round
+trip is close to identity on the valid region for every geometric condition.
+
+```sh
+python -m pytest -q tests/test_transforms.py
+python -m wmbench.figures.transform_samples --manifest data/manifests/smoke.csv --data-root data/images
+python -m wmbench.runner.robustness --manifest data/manifests/smoke.csv --data-root data/images --quality data/images/work/quality_smoke.jsonl --out data/images/work/robust_platform_smoke.jsonl --groups platform --smoke
+python -m wmbench.transforms.sweep_table --records data/images/work/robust_platform_smoke.jsonl
+```
+
+The second command writes one strip per smoke image under `results/<family>/samples/`. The third
+decodes every smoke image after every platform profile and the quality sweep, and the fourth
+writes `results/platform/sweep_smoke.csv`.
+
 ## Running jobs on the VM
 
 ```sh
