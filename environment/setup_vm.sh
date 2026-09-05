@@ -8,11 +8,12 @@ venv=/home/student/venv
 work=/home/student/work
 data=/home/student/data
 bare=/home/student/repo.git
+wam_commit=$(cat "$(dirname "$0")/wam_commit.txt")
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-ssh -o BatchMode=yes "$admin" "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-venv python3-pip unzip tmux git"
-ssh -o BatchMode=yes "$host" "mkdir -p $data/sources $data/images $data/logs $data/work $data/models"
+ssh -o BatchMode=yes "$admin" "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-venv python3-pip unzip tmux git libgl1 libglib2.0-0"
+ssh -o BatchMode=yes "$host" "mkdir -p $data/sources $data/logs $data/work $data/models"
 ssh -o BatchMode=yes "$host" "test -d $bare || git init -q --bare $bare"
 ssh -o BatchMode=yes "$host" "test -d $work || git clone -q $bare $work"
 git remote get-url "$remote" >/dev/null 2>&1 || git remote add "$remote" "$host:$bare"
@@ -25,6 +26,8 @@ ssh -o BatchMode=yes "$host" "$venv/bin/python -m pip install -q -r $work/enviro
 ssh -o BatchMode=yes "$host" "$venv/bin/python -m pip install -q -e $work"
 ssh -o BatchMode=yes "$host" "$venv/bin/playwright install chromium"
 ssh -o BatchMode=yes "$admin" "sudo $venv/bin/playwright install-deps chromium"
+ssh -o BatchMode=yes "$host" "test -d $work/third_party/watermark_anything || git clone -q https://github.com/facebookresearch/watermark-anything $work/third_party/watermark_anything"
+ssh -o BatchMode=yes "$host" "git -C $work/third_party/watermark_anything checkout -q $wam_commit"
 ssh -o BatchMode=yes "$host" "cd $work && $venv/bin/python environment/download_models.py --root $data/models"
 ssh -o BatchMode=yes "$host" "cd $work && $venv/bin/python environment/gpu_check.py"
 ssh -o BatchMode=yes "$host" "nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv"
