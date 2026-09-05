@@ -109,6 +109,33 @@ The second command writes one strip per smoke image under `results/<family>/samp
 decodes every smoke image after every platform profile and the quality sweep, and the fourth
 writes `results/platform/sweep_smoke.csv`.
 
+## Screenshots and chains
+
+`screenshots.py` renders the image on a plain page in a headless Chromium through Playwright
+under the zoom and density of each condition in `configs/screenshots.yaml`, cuts the image out
+at its recorded device box, and records the exact scale, phase, format and browser build. It
+also simulates the same resampling without a browser, and `calibration.py` compares the two on
+the smoke subset for every method. `chains.py` composes screenshots, platform profiles and tier 1
+actions into the five named chains and composes their inverses. A reference pattern is rendered
+at the start of every calibration run and its checksum compared with the config, so a different
+browser build is noticed.
+
+```sh
+python -m pytest -q tests/test_screenshots.py
+python -m wmbench.transforms.calibration --quality data/images/work/quality_smoke.jsonl --out data/images/work/calibration_smoke.jsonl
+```
+
+The calibration writes `results/calibration/screenshots_smoke.csv` and takes about two hours on
+a CPU, most of it decoding. The screenshot conditions need Chromium, which `setup_pc.ps1` and
+`setup_vm.sh` install.
+
+## Real device screenshots
+
+`python -m wmbench.runner.real_sheet --out <folder>` writes the 100 file sheet that teammates
+screenshot on their own devices, and `python -m wmbench.runner.real_ingest --folder <drop>
+--quality <records> --out <jsonl> --summary <csv>` decodes whatever comes back, matching files by
+their `<method>__<image>` names and grouping by the person and device folders.
+
 ## Running jobs on the VM
 
 ```sh
