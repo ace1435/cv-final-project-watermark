@@ -1,1 +1,26 @@
-models: []
+models:
+  - name: hidden_encoder_48b
+    url: https://dl.fbaipublicfiles.com/ssl_watermarking/encoder_with_jnd_48b.torchscript.pt
+    dest: hidden/encoder_with_jnd_48b.torchscript.pt
+    sha256: 4722388872e8ec7cbc3084806546d852b982cc1ed01245d8dc039dd748af3071
+    license: CC BY-NC 4.0
+  - name: hidden_decoder_48b
+    url: https://dl.fbaipublicfiles.com/ssl_watermarking/decoder_48b.torchscript.pt
+    dest: hidden/decoder_48b.torchscript.pt
+    sha256: d6f0c052efb0a26869322ee657d9982bba79b32c2e0305fd4339aff45b58ac49
+    license: CC BY-NC 4.0
+  - name: wam_mit
+    url: https://huggingface.co/facebook/watermark-anything/resolve/main/checkpoint.pth
+    dest: wam/checkpoint.pth
+    sha256: 90ef232384e023bd63245eb0c131abd69d2afc7b8f17a71ccedceb542bf009e2
+    license: MIT
+  - name: pixelseal
+    url: https://dl.fbaipublicfiles.com/videoseal/pixelseal/checkpoint.pth
+    dest: videoseal/pixelseal.pth
+    sha256: 0c5665cff20eb6ce1b5aaa7d91c19dafb418bfee32d02dd3344e4ed60d9d75bd
+    license: MIT
+  - name: videoseal_1_0
+    url: https://dl.fbaipublicfiles.com/videoseal/y_256b_img.pth
+    dest: videoseal/y_256b_img.pth
+    sha256: 3d2ff2523d2a89e3532c6dfdcf693098799326e9b3e74c185e815e9baa8340a3
+    license: MIT

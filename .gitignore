@@ -97,3 +97,6 @@ Thumbs.db
 
 # Local data
 data/images/
+
+# Vendored code fetched by the setup scripts
+third_party/
