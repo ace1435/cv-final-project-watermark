@@ -1,0 +1,19 @@
+margin_css: 20
+chromium_args: ["--disable-gpu"]
+reference_hash: 32cdfb13af2608a400f6ecf24376688c1fd5a6e0ddc73a23a2ca06a11bc19348
+conditions:
+  desktop_100: {zoom: 1.0, dpr: 1.0}
+  desktop_90: {zoom: 0.9, dpr: 1.0}
+  desktop_110: {zoom: 1.1, dpr: 1.0}
+  desktop_125: {zoom: 1.25, dpr: 1.0}
+  desktop_150: {zoom: 1.5, dpr: 1.0}
+  win_125: {zoom: 1.0, dpr: 1.25}
+  win_150: {zoom: 1.0, dpr: 1.5}
+  win_125_zoom_110: {zoom: 1.1, dpr: 1.25}
+  mac_retina: {zoom: 1.0, dpr: 2.0}
+  phone_pixel7: {zoom: 1.0, dpr: 2.625, phone_width: 412, mobile: true}
+  phone_iphone15pro: {zoom: 1.0, dpr: 3.0, phone_width: 393, mobile: true}
+  fit_75: {zoom: 1.0, dpr: 1.0, fit: 0.75}
+  fit_50: {zoom: 1.0, dpr: 1.0, fit: 0.5}
+  partial_80: {zoom: 1.0, dpr: 1.0, partial: 0.8}
+  desktop_110_jpeg: {zoom: 1.1, dpr: 1.0, format: jpeg, quality: 80}

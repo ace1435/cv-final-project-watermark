@@ -1,0 +1,23 @@
+profiles:
+  telegram_std:
+    long_side: 1280
+    q: 80
+    confidence: high
+  twitter:
+    long_side: 2048
+    q: 85
+    confidence: high
+  whatsapp_android:
+    long_side: 1600
+    q: 75
+    confidence: estimate
+  instagram:
+    long_side: 1080
+    q: 72
+    confidence: estimate
+  facebook:
+    long_side: 2048
+    q: 80
+    confidence: estimate
+sweep_q: [70, 75, 80, 85]
+subsampling: "4:2:0"

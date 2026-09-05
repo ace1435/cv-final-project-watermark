@@ -1,0 +1,22 @@
+# Small rotation
+
+## What this transform is
+
+The image is rotated about its centre and the corners that fall outside the frame are filled with the original cover pixels.
+
+## What the levels mean
+
+The angle is 1, 3 and 10 degrees.
+
+## What to look for
+
+Even one degree moves the outer pixels by many positions, so this is a hard alignment test. The realigned panel rotates the image back, and the valid mask shows the corners that were lost.
+
+## Files
+
+- `samples/` holds one strip per smoke image for three images, showing the watermarked image, every level of the transform, the strongest level put back into the original grid by the oracle inverse, and the valid mask. The watermarked image is the TrustMark version at 40 dB.
+- `cells.csv`, `curves_tpr` and `breakdown` figures arrive with the detection milestone.
+
+## What can be concluded
+
+Nothing yet. The strips show what the transform does to the pixels. Detection rates come with the calibrated thresholds in a later milestone.
