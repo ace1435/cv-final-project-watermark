@@ -68,6 +68,25 @@ long side to 1024 px with Lanczos, and saves a PNG with no color metadata chunks
 rendered from PDF at 150 dpi first. The sha256 of every output image is recorded in the manifest,
 so a rerun on any machine can be checked with `git diff data/manifests`.
 
+## Watermarkers and quality matching
+
+Five methods share one adapter interface, see `src/wmbench/watermarkers/README.md`. Model files
+are fetched by `environment/download_models.py` from `configs/models.yaml` with checksums, and
+the setup scripts do this for you. The quality run embeds every smoke image with every method at
+the native strength and at the strength that gives 40 dB PSNR, decodes the cover, the native and
+the matched image, and records quality metrics and timings, one JSON line per image and method.
+
+```sh
+python -m wmbench.quality.quality_run --manifest data/manifests/smoke.csv --data-root data/images --out data/images/work/quality_smoke.jsonl
+python -m wmbench.quality.quality_table --records data/images/work/quality_smoke.jsonl --out-dir results/summary --tag smoke --machine pc
+python -m wmbench.figures.samples --manifest data/manifests/smoke.csv --data-root data/images
+```
+
+The first command takes about 40 minutes on a CPU and about 5 minutes on the VM, and resumes
+where it stopped. The second writes `results/summary/quality_smoke.csv`, the per image file, the
+timing file and `results/tables/quality_smoke.tex`. The third writes the residual strips under
+`results/summary/samples/`.
+
 ## Running jobs on the VM
 
 ```sh

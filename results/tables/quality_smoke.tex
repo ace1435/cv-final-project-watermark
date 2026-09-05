@@ -1,0 +1,16 @@
+\begin{tabular}{llrrrrrrr}
+\toprule
+Method & Point & Bits & PSNR & SSIM & LPIPS & DISTS & Bit acc & TPR \\
+\midrule
+dwtdct & native & 32 & 41.4 & 0.989 & 0.017 & 0.031 & 0.821 & 0.66 \\
+dwtdct & matched & 32 & 38.9 & 0.986 & 0.028 & 0.067 & 0.964 & 0.94 \\
+trustmark\_q & native & 100 & 43.1 & 0.991 & 0.002 & 0.033 & 0.999 & 1.00 \\
+trustmark\_q & matched & 100 & 40.0 & 0.984 & 0.006 & 0.060 & 0.993 & 1.00 \\
+wam & native & 32 & 39.9 & 0.982 & 0.030 & 0.058 & 1.000 & 1.00 \\
+wam & matched & 32 & 40.0 & 0.983 & 0.032 & 0.059 & 1.000 & 1.00 \\
+pixelseal & native & 256 & 47.4 & 0.997 & 0.002 & 0.017 & 0.993 & 1.00 \\
+pixelseal & matched & 256 & 40.0 & 0.987 & 0.012 & 0.058 & 0.999 & 1.00 \\
+hidden & native & 48 & 33.4 & 0.959 & 0.087 & 0.059 & 0.957 & 0.98 \\
+hidden & matched & 48 & 40.0 & 0.991 & 0.024 & 0.020 & 0.891 & 0.98 \\
+\bottomrule
+\end{tabular}

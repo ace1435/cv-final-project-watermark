@@ -1,0 +1,6 @@
+method,n,embed_s_mean,decode_s_mean,match_s_mean
+dwtdct,50,0.2079,0.1269,2.3509
+trustmark_q,50,0.0578,0.0108,0.1061
+wam,50,0.0550,0.0152,0.0425
+pixelseal,50,0.0149,0.0078,0.0443
+hidden,50,0.0446,0.0465,0.1967
