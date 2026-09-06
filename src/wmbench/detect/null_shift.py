@@ -11,7 +11,7 @@ from wmbench.manifest import read_rows
 from wmbench.quality.quality_run import message_rng
 from wmbench.realign.oracle import realign
 from wmbench.runner.jobs import run_items_multi
-from wmbench.runner.robustness import decode_at, load_cache, registration
+from wmbench.runner.robustness import decode_at, load_cache, registration, shard
 from wmbench.transforms.registry import condition_rng, conditions
 from wmbench.watermarkers import load, primaries
 from wmbench.watermarkers.common import root
@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--count", type=int, default=500)
     parser.add_argument("--methods", nargs="*", default=primaries)
+    parser.add_argument("--shard", default="0/1")
     args = parser.parse_args()
     rows = read_rows(args.manifest)
     rng = np.random.default_rng(seeds["sample_null"])
@@ -67,7 +68,7 @@ def main():
     print(f"{len(chosen)} null images, {len(conds)} conditions, cached registrations {len(cache)}", flush=True)
     for name in args.methods:
         wm = load(name)
-        items = [(row, cond) for row in chosen for cond in conds]
+        items = shard(args.shard, [(row, cond) for row in chosen for cond in conds])
         t0 = time.time()
         finished, skipped = run_items_multi(items, lambda it: f"{it[0]['id']}|{name}|{it[1].name}", lambda it: work_item(wm, args.data_root, it[0], it[1], cache, cache_path), args.out, 3)
         print(f"{name} finished {finished} skipped {skipped} in {time.time() - t0:.0f}s", flush=True)

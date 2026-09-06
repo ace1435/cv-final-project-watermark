@@ -72,6 +72,11 @@ def decode_at(wm, img, cover, strength, matrix):
     return wm.decode(img, strength), (0, 0)
 
 
+def shard(spec, items):
+    index, count = (int(x) for x in spec.split("/"))
+    return items[index::count]
+
+
 def load_cache(path):
     cache = {}
     path = Path(path)
@@ -142,6 +147,7 @@ def main():
     parser.add_argument("--groups", nargs="+", default=all_groups)
     parser.add_argument("--point", default="matched")
     parser.add_argument("--methods", nargs="*", default=primaries)
+    parser.add_argument("--shard", default="0/1")
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--zero-fill", action="store_true")
     parser.add_argument("--registration", default="")
@@ -154,7 +160,7 @@ def main():
     print(f"{len(rows)} images, {len(conds)} conditions, methods {args.methods}, cached registrations {len(cache)}", flush=True)
     for name in args.methods:
         wm = load(name)
-        items = [(row, cond) for row in rows for cond in conds]
+        items = shard(args.shard, [(row, cond) for row in rows for cond in conds])
         t0 = time.time()
         finished, skipped = run_items_multi(
             items,
