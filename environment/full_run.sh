@@ -46,7 +46,7 @@ for i in $(seq 0 $((gpu_shards - 1))); do
 done
 wait_all "${pids[@]}"
 cat "${out}"_gpu*.registration.jsonl > "${out}.registration.jsonl"
-say "wave 1 gpu done, $(cat "${out}"_gpu*.jsonl | wc -l) records, $(wc -l < "${out}.registration.jsonl") registrations, failures so far $failed"
+say "wave 1 gpu done, $(cat "${out}"_gpu?.jsonl | wc -l) records, $(wc -l < "${out}.registration.jsonl") registrations, failures so far $failed"
 
 say "wave 2 dwtdct start, $cpu_shards shards"
 pids=()
