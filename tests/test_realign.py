@@ -28,7 +28,7 @@ needs_models = pytest.mark.skipif(not models_available(), reason="matching weigh
 
 
 @needs_models
-@pytest.mark.parametrize("family,level", [("crop", 0.5), ("downscale", 0.5), ("rotate", 3), ("shift", 8)])
+@pytest.mark.parametrize("family,level", [("crop", 0.5), ("downscale", 0.5), ("downscale", 0.25), ("rotate", 3), ("shift", 8)])
 def test_estimated_matrix_is_close_to_oracle(family, level):
     img = textured_image()
     out, params = tier1.apply(family, level, img, img, np.random.default_rng(1))
@@ -36,6 +36,14 @@ def test_estimated_matrix_is_close_to_oracle(family, level):
     est, info = estimated.estimate(img, out)
     assert info["method"] != "failed"
     assert estimated.corner_error(est, oracle, img.shape) < 1.5
+
+
+def test_corner_shift_is_the_largest_corner_move():
+    a = np.eye(3)
+    b = np.array([[1.0, 0.0, 3.0], [0.0, 1.0, 4.0], [0.0, 0.0, 1.0]])
+    assert estimated.corner_shift(a, b, (100, 200)) == pytest.approx(5.0)
+    c = np.array([[1.1, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    assert estimated.corner_shift(a, c, (100, 200)) == pytest.approx(19.9)
 
 
 def test_run_items_multi_writes_all_rungs_and_skips(tmp_path):

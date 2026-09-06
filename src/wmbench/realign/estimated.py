@@ -9,6 +9,7 @@ match_side = 1024
 min_inliers = 15
 min_response = 0.3
 max_keypoints = 2048
+upsample_from = 1.5
 
 _models = None
 
@@ -64,6 +65,15 @@ def glue_matches(cover, out):
     return k0[pairs[:, 0]].cpu().numpy(), k1[pairs[:, 1]].cpu().numpy()
 
 
+def upsampled_matches(cover, out):
+    f = max(cover.shape[:2]) / max(out.shape[:2])
+    up = cv2.resize(out, None, fx=f, fy=f, interpolation=cv2.INTER_CUBIC)
+    small_cover, sc = shrink(cover)
+    small_up, su = shrink(up)
+    src, dst = glue_matches(small_cover, small_up)
+    return src / sc, dst / su / f
+
+
 def similarity(src, dst):
     if len(src) < min_inliers:
         return None, 0
@@ -90,6 +100,7 @@ def phase_shift(cover, out):
 
 
 ecc_side = 512
+ecc_limit = 10
 
 
 def scale_matrix(f):
@@ -109,7 +120,9 @@ def refine_ecc(cover, out, matrix):
         cc, refined = cv2.findTransformECC(template, moving, warp, cv2.MOTION_AFFINE, criteria, None, 5)
     except cv2.error:
         return matrix, False
-    if not np.all(np.isfinite(refined)) or np.abs(refined - warp).max() > 10 * f:
+    if not np.all(np.isfinite(refined)):
+        return matrix, False
+    if corner_shift(np.vstack([refined, [0, 0, 1]]), reduced, small_cover.shape) > ecc_limit * f:
         return matrix, False
     full = scale_matrix(1 / f) @ np.vstack([refined, [0, 0, 1]]) @ scale_matrix(f)
     return full, True
@@ -122,6 +135,10 @@ def estimate(cover, out):
     matrix, inliers = similarity(src / sc, dst / so)
     method = "lightglue"
     response = 0.0
+    if matrix is None and max(cover.shape[:2]) >= upsample_from * max(out.shape[:2]):
+        src, dst = upsampled_matches(cover, out)
+        matrix, inliers = similarity(src, dst)
+        method = "lightglue_up"
     if matrix is None:
         matrix, response = phase_shift(cover, out)
         method = "phase"
@@ -134,9 +151,19 @@ def estimate(cover, out):
     return matrix, {"method": method, "inliers": inliers, "response": response, "ecc": refined}
 
 
-def corner_error(estimated, oracle, shape):
+def image_corners(shape):
     h, w = shape[:2]
-    corners = np.array([[0, 0, 1], [w - 1, 0, 1], [0, h - 1, 1], [w - 1, h - 1, 1]], dtype=np.float64).T
+    return np.array([[0, 0, 1], [w - 1, 0, 1], [0, h - 1, 1], [w - 1, h - 1, 1]], dtype=np.float64).T
+
+
+def corner_shift(a, b, shape):
+    corners = image_corners(shape)
+    moved = (np.asarray(a) @ corners)[:2] - (np.asarray(b) @ corners)[:2]
+    return float(np.linalg.norm(moved, axis=0).max())
+
+
+def corner_error(estimated, oracle, shape):
+    corners = image_corners(shape)
     a = (np.asarray(estimated) @ corners)[:2]
     b = (np.asarray(oracle) @ corners)[:2]
     return float(np.linalg.norm(a - b, axis=0).mean())
