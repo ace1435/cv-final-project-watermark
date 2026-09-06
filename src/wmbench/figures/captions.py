@@ -124,7 +124,7 @@ def conclusion(rows):
     for method in primaries:
         w = worst_cell(rows, method, "tpr_r1")
         if w is not None and w["tpr_r1"] < 0.5:
-            worst_names.append(f"{names[method]} at {w['condition']} ({w['tpr_r1']:.2f})")
+            worst_names.append(f"{names[method]} at {w['condition']} with {w['tpr_r1']:.2f}")
     text = f"The strongest method at rung 1 in this family is {best}."
     if worst_names:
         text += " Cells below one half at rung 1 are " + ", ".join(worst_names) + "."

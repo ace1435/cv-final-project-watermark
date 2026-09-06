@@ -22,8 +22,8 @@ with `../upscale/` to see how much the JPEG adds on top of the enlargement.
 ## Files
 
 - `samples/` holds one strip per smoke image for three images.
-- `cells.csv` and the figures arrive with the detection milestone.
+- `cells_smoke.csv` holds every number behind the figures, one row per condition, method and domain, with the TPR at each rung and its Wilson bounds, the bit accuracy, the zero fill ablation, the failure label shares and the median registration error. The figures `curves_tpr_smoke`, `curves_bitacc_smoke` and `breakdown` are explained under Figures below.
 
 ## What can be concluded
 
-Nothing yet. See `../platform/README.md` for why both families exist.
+See `../platform/README.md` for why both families exist. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.

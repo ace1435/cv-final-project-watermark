@@ -100,6 +100,21 @@ def breakdown(rows, folder, title):
     save(fig, folder, "breakdown")
 
 
+max_columns = 32
+
+
+def cell_text(v):
+    if abs(v) < 1:
+        return f"{v:.2f}".lstrip("0").replace("-0", "-")
+    return f"{v:.0f}"
+
+
+def cell_color(v, diff):
+    if diff:
+        return "white" if abs(v) > 0.5 else "black"
+    return "white" if v < 0.5 else "black"
+
+
 def heatmap(rows, folder, key, title, stem, diff_key=None):
     conds = level_axis(rows)
     matrix = np.full((len(primaries), len(conds)), np.nan)
@@ -111,21 +126,26 @@ def heatmap(rows, folder, key, title, stem, diff_key=None):
                 if diff_key:
                     value = value - mine[0][diff_key]
                 matrix[i, j] = value
-    fig, ax = plt.subplots(figsize=(max(8, 0.32 * len(conds) + 2), 3.2))
+    blocks = int(np.ceil(len(conds) / max_columns))
+    per = int(np.ceil(len(conds) / blocks))
+    fig, axes = plt.subplots(blocks, 1, figsize=(max(8, 0.32 * per + 2), 2.4 * blocks + 0.8), squeeze=False, constrained_layout=True)
     cmap = "RdBu" if diff_key else "viridis"
     vmin, vmax = (-1, 1) if diff_key else (0, 1)
-    im = ax.imshow(matrix, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax)
-    ax.set_yticks(range(len(primaries)))
-    ax.set_yticklabels([names[m] for m in primaries], fontsize=8)
-    ax.set_xticks(range(len(conds)))
-    ax.set_xticklabels(conds, rotation=90, fontsize=6)
-    for i in range(len(primaries)):
-        for j in range(len(conds)):
-            v = matrix[i, j]
-            if not np.isnan(v):
-                ax.text(j, i, f"{v:.2f}".lstrip("0") if abs(v) < 1 else f"{v:.0f}", ha="center", va="center", fontsize=4.5, color="white" if (v < 0.5 and not diff_key) or (diff_key and abs(v) > 0.5) else "black")
-    ax.set_title(title, fontsize=10)
-    fig.colorbar(im, ax=ax, fraction=0.02, pad=0.01)
+    for b, ax in enumerate(axes[:, 0]):
+        start = b * per
+        part = matrix[:, start : start + per]
+        im = ax.imshow(part, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax)
+        ax.set_yticks(range(len(primaries)))
+        ax.set_yticklabels([names[m] for m in primaries], fontsize=8)
+        ax.set_xticks(range(part.shape[1]))
+        ax.set_xticklabels(conds[start : start + per], rotation=90, fontsize=6.5)
+        for i in range(len(primaries)):
+            for j in range(part.shape[1]):
+                v = part[i, j]
+                if not np.isnan(v):
+                    ax.text(j, i, cell_text(v), ha="center", va="center", fontsize=5.5, color=cell_color(v, diff_key))
+    axes[0, 0].set_title(title, fontsize=10)
+    fig.colorbar(im, ax=axes[:, 0].tolist(), fraction=0.02, pad=0.01)
     save(fig, folder, stem)
 
 
