@@ -23,6 +23,11 @@ detection agreement of 1.00 means the simulation would give the same benchmark a
 real browser for that condition and method. The columns to watch are `psnr_real_sim_mean` and
 `detection_agreement`.
 
+## Limitation
+
+The screenshot conditions come from a real Chromium renderer validated against simulation, and
+screenshots from operating system tools, phones and messaging apps were not collected.
+
 ## What can be concluded
 
 The number in the table for each condition says whether a paper that simulates a screenshot as
