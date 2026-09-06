@@ -8,6 +8,7 @@ import numpy as np
 from statsmodels.stats.proportion import proportion_confint
 
 from wmbench.detect.thresholds import load_thresholds
+from wmbench.transforms import screenshots
 from wmbench.transforms.registry import conditions
 from wmbench.watermarkers import primaries
 
@@ -127,6 +128,10 @@ def folder_of(family):
         return "platform"
     if family.startswith("chain_"):
         return "chains"
+    if family in screenshots.conditions:
+        return "screenshot"
+    if family.startswith("downscale_"):
+        return "downscale"
     return family
 
 
@@ -161,8 +166,9 @@ def main():
         write_csv(out / folder / f"cells_{args.tag}.csv", mine)
     pooled = [r for r in rows if r["domain"] == "all"]
     for method in primaries:
-        mine = [r for r in pooled if r["method"] == method]
-        print(f"{method:12s} conditions {len(mine)} mean tpr r1 {np.mean([r['tpr_r1'] for r in mine]):.3f} r2 {np.mean([r['tpr_r2'] for r in mine]):.3f} r3 {np.mean([r.get('tpr_r3', float('nan')) for r in mine]):.3f}")
+        mine = [r for r in pooled if r["method"] == method and "tpr_r3" in r]
+        if mine:
+            print(f"{method:12s} conditions {len(mine)} mean tpr r1 {np.mean([r['tpr_r1'] for r in mine]):.3f} r2 {np.mean([r['tpr_r2'] for r in mine]):.3f} r3 {np.mean([r['tpr_r3'] for r in mine]):.3f}")
 
 
 if __name__ == "__main__":
