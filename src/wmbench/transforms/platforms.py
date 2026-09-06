@@ -45,3 +45,31 @@ def apply(name, img, q=None):
 def inverse(params, shape):
     h, w = shape[:2]
     return scaling(params["sx"], params["sy"]), np.ones((h, w), dtype=bool)
+
+
+hires_factor = 2
+
+
+def hires_conditions():
+    return [(name, None) for name in profiles]
+
+
+def hires_name(name):
+    return f"platform_hires_{name}"
+
+
+def apply_hires(name, img):
+    h, w = img.shape[:2]
+    up_w = w * hires_factor
+    up_h = h * hires_factor
+    up = cv2.resize(img, (up_w, up_h), interpolation=cv2.INTER_LINEAR)
+    out, params = apply(name, up)
+    steps = [{"kind": "upscale", "sx": up_w / w, "sy": up_h / h, "w": up_w, "h": up_h}, {"kind": "platform", "params": params}]
+    return out, {"profile": name, "steps": steps, "sx": (up_w / w) * params["sx"], "sy": (up_h / h) * params["sy"]}
+
+
+def inverse_hires(params, shape):
+    h, w = shape[:2]
+    up, plat = params["steps"]
+    matrix = scaling(plat["params"]["sx"], plat["params"]["sy"]) @ scaling(up["sx"], up["sy"])
+    return matrix, np.ones((h, w), dtype=bool)

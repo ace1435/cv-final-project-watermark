@@ -17,6 +17,8 @@ class condition:
             return tier1.apply(self.family, self.level, img, cover, rng)
         if self.kind == "platform":
             return platforms.apply(self.family, img, self.level)
+        if self.kind == "platform_hires":
+            return platforms.apply_hires(self.family, img)
         if self.kind == "screenshot":
             return screenshots.render(self.family, img, rng)
         return chains.apply(self.family, img, cover, rng)
@@ -26,6 +28,8 @@ class condition:
             return tier1.inverse(self.family, params, shape)
         if self.kind == "platform":
             return platforms.inverse(params, shape)
+        if self.kind == "platform_hires":
+            return platforms.inverse_hires(params, shape)
         if self.kind == "screenshot":
             return screenshots.inverse(params, shape)
         return chains.inverse(params, shape)
@@ -33,7 +37,7 @@ class condition:
     def geometric(self):
         if self.kind == "tier1":
             return tier1.families[self.family]["geometric"]
-        return self.kind in ("screenshot", "chain")
+        return self.kind in ("platform_hires", "screenshot", "chain")
 
 
 def conditions(groups, smoke=False):
@@ -44,6 +48,9 @@ def conditions(groups, smoke=False):
     if "platform" in groups:
         for name, q in platforms.conditions(smoke):
             out.append(condition(platforms.condition_name(name, q), name, q, "platform"))
+    if "platform_hires" in groups:
+        for name, q in platforms.hires_conditions():
+            out.append(condition(platforms.hires_name(name), name, q, "platform_hires"))
     if "screenshot" in groups:
         for name in screenshots.conditions:
             out.append(condition(name, name, None, "screenshot"))

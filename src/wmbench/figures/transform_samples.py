@@ -59,6 +59,17 @@ def platform_strip(cover, marked):
     return row(panels)
 
 
+def platform_hires_strip(cover, marked):
+    panels = [thumb(marked, "watermarked")]
+    for name in platforms.profiles:
+        out, params = platforms.apply_hires(name, marked)
+        panels.append(thumb(out, f"{name} {out.shape[1]}x{out.shape[0]}"))
+    out, params = platforms.apply_hires("whatsapp_android", marked)
+    matrix, valid = platforms.inverse_hires(params, cover.shape)
+    panels += realigned_panels(out, matrix, valid, cover, "whatsapp realigned")
+    return row(panels)
+
+
 def screenshot_strips(cover, marked, rng):
     names = list(screenshots.conditions)
     first = [thumb(marked, "watermarked")]
@@ -93,7 +104,7 @@ def main():
     parser.add_argument("--manifest", default="data/manifests/smoke.csv")
     parser.add_argument("--data-root", default="data/images")
     parser.add_argument("--out-dir", default="results")
-    parser.add_argument("--groups", nargs="+", default=["tier1", "platform", "screenshot", "chain"])
+    parser.add_argument("--groups", nargs="+", default=["tier1", "platform", "platform_hires", "screenshot", "chain"])
     args = parser.parse_args()
     data = Path(args.data_root)
     out_root = Path(args.out_dir)
@@ -108,6 +119,8 @@ def main():
                     save(family_strip(family, cover, marked, rng), out_root / family / "samples", f"{family}_{image_id}.png")
         if "platform" in args.groups:
             save(platform_strip(cover, marked), out_root / "platform" / "samples", f"platform_{image_id}.png")
+        if "platform_hires" in args.groups:
+            save(platform_hires_strip(cover, marked), out_root / "platform_hires" / "samples", f"platform_hires_{image_id}.png")
         if "screenshot" in args.groups:
             a, b = screenshot_strips(cover, marked, rng)
             save(a, out_root / "screenshot" / "samples", f"screenshot_a_{image_id}.png")

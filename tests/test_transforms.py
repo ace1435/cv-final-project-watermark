@@ -60,6 +60,21 @@ def test_crop_records_position_and_shift_moves_content():
     assert np.array_equal(shifted[8:, 8:], img)
 
 
+@pytest.mark.parametrize("name", list(platforms.profiles))
+def test_platform_hires_composed_inverse(name):
+    img = smooth_image(768, 1024)
+    out, params = platforms.apply_hires(name, img)
+    limit = platforms.profiles[name]["long_side"]
+    assert max(out.shape[:2]) == min(limit, 2048)
+    matrix, valid = platforms.inverse_hires(params, img.shape)
+    assert abs(matrix[0, 0] - out.shape[1] / img.shape[1]) < 1e-9
+    back, mask = realign(out, matrix, img.shape, valid)
+    inner = mask.copy()
+    inner[:4] = inner[-4:] = False
+    inner[:, :4] = inner[:, -4:] = False
+    assert masked_psnr(img, back, inner) > 38
+
+
 def test_platform_profiles_skip_resize_below_limit():
     img = smooth_image(768, 1024)
     for name in platforms.profiles:

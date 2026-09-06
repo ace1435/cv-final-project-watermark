@@ -8,6 +8,17 @@ Each profile imitates what a sharing platform does to a posted image, resize to 
 
 telegram_std is 1280 pixels and q 80, twitter 2048 and q 85, both verified from source or measurement. whatsapp_android is 1600 and q 75, instagram 1080 and q 72, facebook 2048 and q 80, all three estimates from published forensics. For the three estimates the smoke subset also runs q 70, 75, 80 and 85 as a sensitivity band, in `sweep_smoke.csv`.
 
+## Why two platform families exist
+
+Our benchmark images are 1024 px wide, so the resize step of every profile is idle here and
+these five conditions measure the JPEG step alone. Real users often post larger originals, and
+then the platform shrinks them. The `platform_hires` family in `../platform_hires/` simulates
+that case by first enlarging the image by two with bilinear resampling, as if a 2048 px original
+had been watermarked, then applying the platform resize to its long side limit and its JPEG.
+Its net scale is 1.25 for Telegram, 1.5625 for WhatsApp, 1.055 for Instagram and 2.0 for
+Twitter and Facebook, and its inverse is composed from the two resizes like a chain. Both
+families run on the smoke subset and on the full set.
+
 ## What to look for
 
 Nothing moves, so these are pure compression tests at realistic settings. Read the sweep to see how sensitive each method is to the exact quality a platform uses.
