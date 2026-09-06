@@ -43,6 +43,24 @@ def run_items(items, key_fn, work_fn, path):
     return finished, skipped
 
 
+def run_items_multi(items, key_fn, work_fn, path, last):
+    done = load_done(path)
+    finished = 0
+    skipped = 0
+    for item in items:
+        key = key_fn(item)
+        if f"{key}|{last}" in done:
+            skipped += 1
+            continue
+        for record in work_fn(item):
+            full = {"key": f"{key}|{record['rung']}", "time": time.time()}
+            full.update(record)
+            append_record(path, full)
+        done.add(f"{key}|{last}")
+        finished += 1
+    return finished, skipped
+
+
 def tmux_command(name, command, log):
     inner = f"{command} > {shlex.quote(str(log))} 2>&1"
     return ["tmux", "new-session", "-d", "-s", name, inner]

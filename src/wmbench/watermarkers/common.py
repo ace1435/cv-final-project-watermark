@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +11,9 @@ std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
 
 
 def pick_device():
+    wanted = os.environ.get("WMBENCH_DEVICE", "")
+    if wanted:
+        return torch.device(wanted)
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
