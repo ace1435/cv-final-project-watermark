@@ -100,7 +100,7 @@ def breakdown(rows, folder, title):
     save(fig, folder, "breakdown")
 
 
-max_columns = 32
+max_columns = 24
 
 
 def cell_text(v):
@@ -138,12 +138,12 @@ def heatmap(rows, folder, key, title, stem, diff_key=None):
         ax.set_yticks(range(len(primaries)))
         ax.set_yticklabels([names[m] for m in primaries], fontsize=8)
         ax.set_xticks(range(part.shape[1]))
-        ax.set_xticklabels(conds[start : start + per], rotation=90, fontsize=6.5)
+        ax.set_xticklabels(conds[start : start + per], rotation=90, fontsize=7)
         for i in range(len(primaries)):
             for j in range(part.shape[1]):
                 v = part[i, j]
                 if not np.isnan(v):
-                    ax.text(j, i, cell_text(v), ha="center", va="center", fontsize=5.5, color=cell_color(v, diff_key))
+                    ax.text(j, i, cell_text(v), ha="center", va="center", fontsize=6.5, color=cell_color(v, diff_key))
     axes[0, 0].set_title(title, fontsize=10)
     fig.colorbar(im, ax=axes[:, 0].tolist(), fraction=0.02, pad=0.01)
     save(fig, folder, stem)
