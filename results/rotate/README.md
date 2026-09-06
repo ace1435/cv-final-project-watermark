@@ -19,7 +19,9 @@ Even one degree moves the outer pixels by many positions, so this is a hard alig
 
 ## What can be concluded
 
-The strips show what the transform does to the pixels. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.## Figures
+The strips show what the transform does to the pixels. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.
+
+## Figures
 
 ### curves_tpr_smoke
 

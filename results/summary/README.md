@@ -90,6 +90,7 @@ uint8 rounding noise of the colour conversion and stop decoding, so the search n
 Nothing here says anything about robustness. These are clean image numbers that define the
 operating points. The sharing actions, screenshots and calibrated thresholds come in the
 following milestones.
+
 ## Figures
 
 ### heatmap_rung1_smoke, heatmap_rung2_smoke, heatmap_rung3_smoke
@@ -98,7 +99,7 @@ following milestones.
 
 **How to read it.** Scan a row to see where a method breaks. Scan a column to see which methods a condition breaks. Compare the same cell across the three maps to see whether the failure is alignment or destruction.
 
-**What it means.** Mean TPR over all conditions at rung 1 is Watermark Anything 1.00, PixelSeal 1.00, TrustMark 0.96, HiDDeN 0.71, DWT-DCT-SVD 0.30, at rung 2 Watermark Anything 1.00, PixelSeal 1.00, TrustMark 1.00, HiDDeN 0.77, DWT-DCT-SVD 0.74, at rung 3 Watermark Anything 1.00, PixelSeal 1.00, TrustMark 1.00, HiDDeN 0.77, DWT-DCT-SVD 0.71.
+**What it means.** Mean TPR over all conditions at rung 1 is Watermark Anything 1.00, PixelSeal 1.00, TrustMark 0.96, HiDDeN 0.71, DWT-DCT-SVD 0.30, at rung 2 Watermark Anything 1.00, PixelSeal 1.00, TrustMark 1.00, HiDDeN 0.77, DWT-DCT-SVD 0.74, at rung 3 Watermark Anything 1.00, PixelSeal 1.00, TrustMark 1.00, HiDDeN 0.76, DWT-DCT-SVD 0.71.
 
 **What we conclude.** The gap between rung 1 and rung 2 is the share of failures that are pure alignment and that a synchronisation step could repair.
 

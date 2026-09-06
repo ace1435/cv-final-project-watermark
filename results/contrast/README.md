@@ -19,7 +19,9 @@ Like brightness the image does not move. A factor below 1 shrinks the watermark 
 
 ## What can be concluded
 
-The strips show what the transform does to the pixels. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.## Figures
+The strips show what the transform does to the pixels. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.
+
+## Figures
 
 ### curves_tpr_smoke
 
@@ -49,4 +51,4 @@ The strips show what the transform does to the pixels. The detection rates on th
 
 **What it means.** DWT-DCT-SVD mostly destroyed at 0.54, TrustMark mostly survived at 1.00, Watermark Anything mostly survived at 1.00, PixelSeal mostly survived at 1.00, HiDDeN mostly survived at 0.90.
 
-**What we conclude.** After the estimated realignment the mean TPR is Watermark Anything 1.00, TrustMark 1.00, PixelSeal 1.00, HiDDeN 0.90, DWT-DCT-SVD 0.45, which is the practical ceiling for this family without a synchronisation watermark.
+**What we conclude.** After the estimated realignment the mean TPR is Watermark Anything 1.00, TrustMark 1.00, PixelSeal 1.00, HiDDeN 0.89, DWT-DCT-SVD 0.45, which is the practical ceiling for this family without a synchronisation watermark.

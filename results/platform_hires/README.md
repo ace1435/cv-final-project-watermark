@@ -26,7 +26,9 @@ with `../upscale/` to see how much the JPEG adds on top of the enlargement.
 
 ## What can be concluded
 
-See `../platform/README.md` for why both families exist. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.## Figures
+See `../platform/README.md` for why both families exist. The detection rates on the 50 smoke images at the three rungs are in the Figures section below and in `cells_smoke.csv`, read against the thresholds in `../summary/thresholds.csv`. The full 1,000 image run comes with the next milestone.
+
+## Figures
 
 ### curves_tpr_smoke
 
@@ -54,6 +56,6 @@ See `../platform/README.md` for why both families exist. The detection rates on 
 
 **How to read it.** Read the colours above the green. Orange and blue are failures a practical fixer can repair, red is not.
 
-**What it means.** DWT-DCT-SVD mostly recoverable at 0.69, TrustMark mostly survived at 1.00, Watermark Anything mostly survived at 1.00, PixelSeal mostly survived at 1.00, HiDDeN mostly recoverable at 0.50.
+**What it means.** DWT-DCT-SVD mostly recoverable at 0.69, TrustMark mostly survived at 1.00, Watermark Anything mostly survived at 1.00, PixelSeal mostly survived at 1.00, HiDDeN mostly recoverable at 0.49.
 
-**What we conclude.** After the estimated realignment the mean TPR is Watermark Anything 1.00, TrustMark 1.00, PixelSeal 1.00, HiDDeN 0.73, DWT-DCT-SVD 0.69, which is the practical ceiling for this family without a synchronisation watermark.
+**What we conclude.** After the estimated realignment the mean TPR is Watermark Anything 1.00, TrustMark 1.00, PixelSeal 1.00, HiDDeN 0.72, DWT-DCT-SVD 0.69, which is the practical ceiling for this family without a synchronisation watermark.
