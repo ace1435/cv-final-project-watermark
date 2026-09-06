@@ -89,18 +89,30 @@ def phase_shift(cover, out):
     return matrix, float(response)
 
 
+ecc_side = 512
+
+
+def scale_matrix(f):
+    return np.array([[f, 0.0, 0.0], [0.0, f, 0.0], [0.0, 0.0, 1.0]])
+
+
 def refine_ecc(cover, out, matrix):
-    template = gray(cover).astype(np.float32) / 255.0
-    moving = gray(out).astype(np.float32) / 255.0
-    warp = matrix[:2].astype(np.float32).copy()
-    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 50, 1e-4)
+    f = min(1.0, ecc_side / max(cover.shape[:2]))
+    small_cover = cv2.resize(cover, None, fx=f, fy=f, interpolation=cv2.INTER_AREA) if f < 1 else cover
+    small_out = cv2.resize(out, None, fx=f, fy=f, interpolation=cv2.INTER_AREA) if f < 1 else out
+    template = gray(small_cover).astype(np.float32) / 255.0
+    moving = gray(small_out).astype(np.float32) / 255.0
+    reduced = scale_matrix(f) @ matrix @ scale_matrix(1 / f)
+    warp = reduced[:2].astype(np.float32).copy()
+    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 1e-4)
     try:
         cc, refined = cv2.findTransformECC(template, moving, warp, cv2.MOTION_AFFINE, criteria, None, 5)
     except cv2.error:
         return matrix, False
-    if not np.all(np.isfinite(refined)) or np.abs(refined - warp).max() > 10:
+    if not np.all(np.isfinite(refined)) or np.abs(refined - warp).max() > 10 * f:
         return matrix, False
-    return np.vstack([refined, [0, 0, 1]]), True
+    full = scale_matrix(1 / f) @ np.vstack([refined, [0, 0, 1]]) @ scale_matrix(f)
+    return full, True
 
 
 def estimate(cover, out):

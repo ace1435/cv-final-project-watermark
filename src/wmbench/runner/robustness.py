@@ -59,10 +59,43 @@ def decode_grid_search(wm, img, cover, strength):
     return best[1], best[2]
 
 
-def decode_at(wm, img, cover, strength, grid):
-    if grid and wm.name == "dwtdct":
+def integer_translation(matrix):
+    m = np.asarray(matrix)
+    linear_ok = np.allclose(m[:2, :2], np.eye(2), atol=1e-6)
+    shift_ok = np.allclose(m[:2, 2], np.rint(m[:2, 2]), atol=1e-6)
+    return linear_ok and shift_ok
+
+
+def decode_at(wm, img, cover, strength, matrix):
+    if wm.name == "dwtdct" and not integer_translation(matrix):
         return decode_grid_search(wm, img, cover, strength)
     return wm.decode(img, strength), (0, 0)
+
+
+def load_cache(path):
+    cache = {}
+    path = Path(path)
+    if path.exists():
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    r = json.loads(line)
+                    cache[r["key"]] = r
+    return cache
+
+
+def registration(cache, path, key, cover, out):
+    if key in cache:
+        r = cache[key]
+        return np.array(r["matrix"]), r["info"], r["register_s"]
+    t0 = time.time()
+    est, info = estimated.estimate(cover, out)
+    record = {"key": key, "matrix": est.tolist(), "info": info, "register_s": time.time() - t0}
+    cache[key] = record
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")
+    return est, info, record["register_s"]
 
 
 def score_fields(wm, scores, bits):
@@ -70,7 +103,7 @@ def score_fields(wm, scores, bits):
     return {"matches": m, "bitacc": m / wm.nbits, "score": matched_filter(scores, bits)}
 
 
-def work_item(wm, quality, data_root, point, row, cond, zero_fill):
+def work_item(wm, quality, data_root, point, row, cond, zero_fill, cache, cache_path):
     q = quality[(row["id"], wm.name)]
     bits = bits_of(q)
     strength = q[f"{point}_strength"]
@@ -86,18 +119,16 @@ def work_item(wm, quality, data_root, point, row, cond, zero_fill):
     oracle, valid = cond.inverse(params, cover.shape)
     t0 = time.time()
     back, mask = realign(out, oracle, cover.shape, valid, cover)
-    scores, shift = decode_at(wm, back, cover, strength, True)
+    scores, shift = decode_at(wm, back, cover, strength, oracle)
     records.append(dict(base, rung=2, valid_fraction=float(mask.mean()), shift=list(shift), decode_s=time.time() - t0, **score_fields(wm, scores, bits)))
     if zero_fill:
         back0, mask0 = realign(out, oracle, cover.shape, valid, None)
-        scores0, shift0 = decode_at(wm, back0, np.zeros_like(cover), strength, True)
+        scores0, shift0 = decode_at(wm, back0, np.zeros_like(cover), strength, oracle)
         records.append(dict(base, rung="2z", valid_fraction=float(mask0.mean()), shift=list(shift0), **score_fields(wm, scores0, bits)))
-    t0 = time.time()
-    est, info = estimated.estimate(cover, out)
-    reg_s = time.time() - t0
+    est, info, reg_s = registration(cache, cache_path, f"{row['id']}|{cond.name}", cover, out)
     error = estimated.corner_error(est, oracle, cover.shape)
     back3, mask3 = realign(out, est, cover.shape, None, cover)
-    scores3, shift3 = decode_at(wm, back3, cover, strength, True)
+    scores3, shift3 = decode_at(wm, back3, cover, strength, est)
     records.append(dict(base, rung=3, reg_method=info["method"], inliers=info["inliers"], ecc=info["ecc"], corner_error=error, register_s=reg_s, valid_fraction=float(mask3.mean()), shift=list(shift3), **score_fields(wm, scores3, bits)))
     return records
 
@@ -113,11 +144,14 @@ def main():
     parser.add_argument("--methods", nargs="*", default=primaries)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--zero-fill", action="store_true")
+    parser.add_argument("--registration", default="")
     args = parser.parse_args()
     rows = read_rows(args.manifest)
     quality = load_quality(args.quality)
     conds = conditions(args.groups, args.smoke)
-    print(f"{len(rows)} images, {len(conds)} conditions, methods {args.methods}", flush=True)
+    cache_path = args.registration or str(Path(args.out).with_suffix(".registration.jsonl"))
+    cache = load_cache(cache_path)
+    print(f"{len(rows)} images, {len(conds)} conditions, methods {args.methods}, cached registrations {len(cache)}", flush=True)
     for name in args.methods:
         wm = load(name)
         items = [(row, cond) for row in rows for cond in conds]
@@ -125,7 +159,7 @@ def main():
         finished, skipped = run_items_multi(
             items,
             lambda it: f"{it[0]['id']}|{name}|{args.point}|{it[1].name}",
-            lambda it: work_item(wm, quality, args.data_root, args.point, it[0], it[1], args.zero_fill),
+            lambda it: work_item(wm, quality, args.data_root, args.point, it[0], it[1], args.zero_fill, cache, cache_path),
             args.out,
             3,
         )
