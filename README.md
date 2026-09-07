@@ -136,6 +136,34 @@ screenshot on their own devices, and `python -m wmbench.runner.real_ingest --fol
 --quality <records> --out <jsonl> --summary <csv>` decodes whatever comes back, matching files by
 their `<method>__<image>` names and grouping by the person and device folders.
 
+## Detection and realignment
+
+The detection threshold per method is the score that 1 percent of the 5,000 unwatermarked null
+images exceed, with the realised rate reported for photos and screens. The robustness runner
+decodes every watermarked smoke image after every condition at three rungs, as received, after
+the oracle realignment with cover fill plus a zero fill ablation, and after the estimated
+realignment. The null shift check decodes 500 null images after 17 representative conditions at
+the same three rungs and gives rung 3 its own threshold. The cell tables, curves, heat maps,
+breakdowns and captions are built from the records.
+
+```sh
+python -m wmbench.detect.null_run --manifest data/manifests/null.csv --data-root data/images --out data/images/work/null_scores.jsonl
+python -m wmbench.detect.thresholds --records data/images/work/null_scores.jsonl
+python -m wmbench.figures.null_plots
+python -m wmbench.runner.robustness --manifest data/manifests/smoke.csv --data-root data/images --quality data/images/work/quality_smoke.jsonl --out data/images/work/robust_smoke.jsonl --smoke --zero-fill
+python -m wmbench.detect.null_shift --manifest data/manifests/null.csv --data-root data/images --out data/images/work/null_shift.jsonl
+python -m wmbench.detect.null_shift_table --records data/images/work/null_shift.jsonl
+python -m wmbench.figures.cells --records data/images/work/robust_smoke.jsonl --thresholds results/summary/thresholds.csv --thresholds3 results/summary/thresholds_rung3.csv --smoke
+python -m wmbench.figures.plots
+python -m wmbench.figures.captions
+```
+
+The null decode and the null shift need the 5,000 null images and ran on the VM. The runner
+takes `--methods` and `--shard i/n` to split the work over processes, each process keeps its own
+registration cache next to its output and `--registration` points several processes at one
+cache. On the VM the smoke run took 2 h 20 for the four learned methods on the GPU and 2 h 45
+for the classical method on four CPU shards.
+
 ## Running jobs on the VM
 
 ```sh
@@ -147,6 +175,23 @@ python -m wmbench.runner.remote pull /home/student/data/work/dummy.jsonl data/im
 
 Every job writes one JSON line per finished item and skips finished items when relaunched, so a
 stopped job is resumed by launching the same command again.
+
+## Full run
+
+`environment/full_run.sh` runs the 1,000 test images through the 75 conditions on the VM in one
+tmux session and chains three waves with no gap, the quality run per method in parallel, three
+GPU shards of the four learned methods, and then the classical method on CPU shards that reuse
+the GPU registration caches. It ends by writing `robust_full.done`, or `robust_full.failed` with
+a count, under `/home/student/data/work`. Launch it from the PC and let it run, it does not need
+the PC afterwards, and relaunching the same command resumes every wave.
+
+```sh
+python -m wmbench.runner.remote launch full_run "bash environment/full_run.sh data/manifests/test.csv full 3 12"
+python -m wmbench.runner.remote pull /home/student/data/work/robust_full_gpu0.jsonl data/images/work/robust_full_gpu0.jsonl
+```
+
+The arguments are the manifest, the tag for the output names, the number of GPU shards, at most
+three on a 24 GB card, and the number of CPU shards of three threads each.
 
 ## Tests
 
