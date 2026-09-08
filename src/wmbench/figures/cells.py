@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from statsmodels.stats.proportion import proportion_confint
 
-from wmbench.detect.thresholds import load_thresholds
+from wmbench.detect.thresholds import load_family_thresholds, load_thresholds
 from wmbench.transforms import screenshots
 from wmbench.transforms.registry import conditions
 from wmbench.watermarkers import primaries
@@ -67,7 +67,8 @@ def condition_order(smoke):
     return [(c.name, c.family, c.level) for c in conditions(["tier1", "platform", "platform_hires", "screenshot", "chain"], smoke)]
 
 
-def cell_rows(records, thresholds, thresholds3, smoke, domains=("all", "photo", "screen")):
+def cell_rows(records, thresholds, thresholds3, smoke, domains=("all", "photo", "screen"), family_thresholds=None):
+    family_thresholds = family_thresholds or {}
     items = group_by_item(records)
     order = condition_order(smoke)
     rows = []
@@ -91,6 +92,13 @@ def cell_rows(records, thresholds, thresholds3, smoke, domains=("all", "photo", 
                     row[f"tpr_r{rung}_low"] = low
                     row[f"tpr_r{rung}_high"] = high
                     row[f"bitacc_r{rung}"] = float(np.mean([it[rung]["bitacc"] for it in have]))
+                    tf = family_thresholds.get((method, family, rung))
+                    if tf is not None:
+                        row[f"tau_family_r{rung}"] = tf
+                        row[f"tpr_family_r{rung}"] = sum(detected(it[rung], tf) for it in have) / len(have)
+                marked = [str(r) for r in rungs if (method, family, r) in family_thresholds]
+                if marked:
+                    row["recalibrated_rungs"] = " ".join(marked)
                 if all("2z" in it for it in mine):
                     hits = sum(detected(it["2z"], tau) for it in mine)
                     row["tpr_r2_zero_fill"] = hits / len(mine)
@@ -152,14 +160,16 @@ def main():
     parser.add_argument("--records", nargs="+", required=True)
     parser.add_argument("--thresholds", default="results/summary/thresholds.csv")
     parser.add_argument("--thresholds3", default="")
+    parser.add_argument("--thresholds-family", default="")
     parser.add_argument("--out-dir", default="results")
     parser.add_argument("--tag", default="smoke")
     parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
     thresholds = load_thresholds(args.thresholds)
     thresholds3 = load_thresholds(args.thresholds3) if args.thresholds3 else {}
+    family = load_family_thresholds(args.thresholds_family) if args.thresholds_family else {}
     records = read_records(args.records)
-    rows = cell_rows(records, thresholds, thresholds3, args.smoke)
+    rows = cell_rows(records, thresholds, thresholds3, args.smoke, family_thresholds=family)
     out = Path(args.out_dir)
     write_csv(out / "summary" / f"cells_{args.tag}.csv", rows)
     for folder, mine in split_by_folder(rows).items():

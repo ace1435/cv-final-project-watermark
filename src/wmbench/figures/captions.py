@@ -6,10 +6,11 @@ from pathlib import Path
 import numpy as np
 
 from wmbench.figures.cells import folder_of
-from wmbench.figures.plots import names
+from wmbench.figures.plots import has, names
 from wmbench.watermarkers import primaries
 
 marker = "## Figures"
+label_names = ["survived", "alignment", "recoverable", "sync_failed", "destroyed"]
 
 
 def read_cells(path):
@@ -21,7 +22,7 @@ def read_cells(path):
             continue
         row = dict(r)
         for k, v in r.items():
-            if k not in ("condition", "family", "method", "domain") and v != "":
+            if k not in ("condition", "family", "method", "domain", "recalibrated_rungs") and v != "":
                 try:
                     row[k] = float(v)
                 except ValueError:
@@ -39,7 +40,7 @@ def folder_key(row):
 def rank_line(rows, key):
     means = []
     for method in primaries:
-        mine = [r for r in rows if r["method"] == method and key in r and r[key] != ""]
+        mine = [r for r in rows if r["method"] == method and has(r, key)]
         if mine:
             means.append((float(np.mean([r[key] for r in mine])), method))
     means.sort(reverse=True)
@@ -47,7 +48,7 @@ def rank_line(rows, key):
 
 
 def worst_cell(rows, method, key):
-    mine = [r for r in rows if r["method"] == method and key in r and r[key] != ""]
+    mine = [r for r in rows if r["method"] == method and has(r, key)]
     if not mine:
         return None
     return min(mine, key=lambda r: r[key])
@@ -56,7 +57,7 @@ def worst_cell(rows, method, key):
 def gain_line(rows):
     parts = []
     for method in primaries:
-        mine = [r for r in rows if r["method"] == method and "tpr_r2" in r and r["tpr_r2"] != ""]
+        mine = [r for r in rows if r["method"] == method and has(r, "tpr_r2")]
         if mine:
             gain = float(np.mean([r["tpr_r2"] - r["tpr_r1"] for r in mine]))
             parts.append(f"{names[method]} {gain:+.2f}")
@@ -68,10 +69,50 @@ def label_line(rows):
     for method in primaries:
         mine = [r for r in rows if r["method"] == method]
         if mine:
-            shares = {lab: float(np.mean([r[f"label_{lab}"] for r in mine])) for lab in ["survived", "alignment", "recoverable", "sync_failed", "destroyed"]}
+            shares = {lab: float(np.mean([r[f"label_{lab}"] for r in mine])) for lab in label_names}
             top = max(shares, key=shares.get)
             parts.append(f"{names[method]} mostly {top.replace('_', ' ')} at {shares[top]:.2f}")
     return ", ".join(parts)
+
+
+def family_threshold_parts(rows):
+    parts = []
+    for method in primaries:
+        for rung in (1, 2, 3):
+            key = f"tpr_family_r{rung}"
+            mine = [r for r in rows if r["method"] == method and has(r, key)]
+            if mine:
+                pooled = float(np.mean([r[f"tpr_r{rung}"] for r in mine]))
+                family = float(np.mean([r[key] for r in mine]))
+                tau = mine[0][f"tau_family_r{rung}"]
+                parts.append(f"{names[method]} at rung {rung} reads {family:.2f} at the family threshold {tau:.2f} against {pooled:.2f} at the pooled threshold")
+    return parts
+
+
+def family_threshold_text(rows):
+    parts = family_threshold_parts(rows)
+    if not parts:
+        return ""
+    return (
+        " In the null shift check the pooled threshold let more than 2 percent of unwatermarked images through for some cells of this family, so those cells carry a second number at a threshold set on the 500 null images of this family alone, drawn as dotted lines with crosses and stored in the `tau_family` and `tpr_family` columns of the cell table. The pooled number stays the primary one. "
+        + ". ".join(parts)
+        + "."
+    )
+
+
+def hurt_cells(rows, limit=0.1):
+    out = []
+    for r in rows:
+        if has(r, "tpr_r2") and r["tpr_r2"] - r["tpr_r1"] < -limit:
+            out.append(f"{names[r['method']]} at {r['condition']} from {r['tpr_r1']:.2f} to {r['tpr_r2']:.2f}")
+    return out
+
+
+def hurt_text(rows):
+    cells = hurt_cells(rows)
+    if not cells:
+        return " No cell loses more than 0.1 after the oracle."
+    return " Cells that lose more than 0.1 after the oracle are " + ", ".join(cells) + ". These are crops decoded by a method that reads the full canvas, where the received crop alone carries the mark and the oracle pastes it onto a canvas of unwatermarked cover pixels that the decoder averages in."
 
 
 def family_text(folder, rows, tag, n):
@@ -86,11 +127,11 @@ def family_text(folder, rows, tag, n):
         "",
         f"### curves_tpr_{tag}",
         "",
-        f"**What you see.** One line per method, the share of the {n} images whose watermark is still detected at 1 percent FPR after each level of this family, from mild on the left to harsh on the right. Solid lines are rung 1, the image as received. Dashed lines are rung 2, after the oracle puts the image back into place. The shaded band is the 95 percent Wilson interval.",
+        f"**What you see.** One line per method, the share of the {n:,} images whose watermark is still detected at 1 percent FPR after each level of this family, from mild on the left to harsh on the right. Solid lines are rung 1, the image as received. Dashed lines are rung 2, after the oracle puts the image back into place. The shaded band is the 95 percent Wilson interval.",
         "",
         "**How to read it.** A line that stays near 1.0 means the method survives this family. A solid line that drops while its dashed line stays high means the watermark is still there and only alignment was lost. Both lines dropping means the watermark was destroyed.",
         "",
-        f"**What it means.** Mean TPR over the levels at rung 1 is {tpr}. After the oracle it is {tpr2}. The gain from realignment is {gain}.",
+        f"**What it means.** Mean TPR over the levels at rung 1 is {tpr}. After the oracle it is {tpr2}. The gain from realignment is {gain}.{hurt_text(rows)}{family_threshold_text(rows)}",
         "",
         f"**What we conclude.** {conclusion(rows)}",
         "",
@@ -104,7 +145,7 @@ def family_text(folder, rows, tag, n):
         "",
         "**What we conclude.** Methods whose bit accuracy sits well above their detection threshold have margin for chains of actions, methods just above it do not.",
         "",
-        "### breakdown",
+        f"### breakdown_{tag}",
         "",
         "**What you see.** One bar per method, the share of images in each failure label averaged over the levels. Green survived at rung 1. Orange alignment failure, rescued by the oracle. Blue recoverable in practice, rescued by the estimated realignment too. Purple sync estimator failed, rescued only by the oracle. Red data destroyed, not rescued even by the oracle.",
         "",
@@ -131,6 +172,14 @@ def conclusion(rows):
     return text
 
 
+def star_text(rows):
+    starred = sorted({(r["method"], r["family"]) for r in rows if has(r, "recalibrated_rungs")})
+    if not starred:
+        return ""
+    pairs = ", ".join(f"{names[m]} under {f}" for m, f in starred)
+    return f" A star after a number marks a cell that also carries a per family threshold in the cell table, because the pooled threshold let more than 2 percent of unwatermarked images through in the null shift check for that family, method and rung. The starred cells are {pairs}, and their second number is in `thresholds_family.csv` and in the `tpr_family` columns."
+
+
 def summary_text(rows, tag):
     lines = [
         marker,
@@ -139,7 +188,7 @@ def summary_text(rows, tag):
         "",
         "**What you see.** Methods as rows, every condition as a column, each cell the share of images detected at 1 percent FPR, dark is low and bright is high. Rung 1 is the image as received, rung 2 after the oracle puts it back into place, rung 3 after the estimated realignment.",
         "",
-        "**How to read it.** Scan a row to see where a method breaks. Scan a column to see which methods a condition breaks. Compare the same cell across the three maps to see whether the failure is alignment or destruction.",
+        f"**How to read it.** Scan a row to see where a method breaks. Scan a column to see which methods a condition breaks. Compare the same cell across the three maps to see whether the failure is alignment or destruction.{star_text(rows)}",
         "",
         f"**What it means.** Mean TPR over all conditions at rung 1 is {rank_line(rows, 'tpr_r1')}, at rung 2 {rank_line(rows, 'tpr_r2')}, at rung 3 {rank_line(rows, 'tpr_r3')}.",
         "",
@@ -147,11 +196,11 @@ def summary_text(rows, tag):
         "",
         f"### heatmap_diff_{tag}",
         "",
-        "**What you see.** Rung 2 minus rung 1 per cell, blue where realignment rescues detections, white where it changes nothing.",
+        "**What you see.** Rung 2 minus rung 1 per cell, blue where realignment rescues detections, white where it changes nothing, red where the oracle lowers the rate.",
         "",
-        "**How to read it.** Strong blue columns are the conditions where the watermark survives in the pixels but the decoder loses it. Red would mean realignment hurt, which should not happen.",
+        "**How to read it.** Strong blue columns are the conditions where the watermark survives in the pixels but the decoder loses it. Red cells are the ones where putting the image back hurts, which only happens when the decoder reads the whole canvas and the filled in cover pixels dilute the mark.",
         "",
-        f"**What it means.** The mean gain per method is {gain_line(rows)}.",
+        f"**What it means.** The mean gain per method is {gain_line(rows)}.{hurt_text(rows)}",
         "",
         "**What we conclude.** The methods and conditions with the largest gain are the ones where a practical synchroniser is worth building.",
         "",
@@ -174,7 +223,7 @@ def write_section(path, text):
     old = path.read_text(encoding="utf-8") if path.exists() else f"# {path.parent.name}\n\n"
     if marker in old:
         old = old[: old.index(marker)].rstrip() + "\n\n"
-    path.write_text(old + text, encoding="utf-8")
+    path.write_text(old + text, encoding="utf-8", newline="\n")
 
 
 def main():
