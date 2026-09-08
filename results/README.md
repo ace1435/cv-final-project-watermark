@@ -6,8 +6,8 @@ for, and what can and cannot be concluded.
 
 | Folder | Content |
 |---|---|
-| `summary/` | Quality of the five methods at their native setting and at the common 40 dB point, timing, residual strips, the detection thresholds with their realised false positive rates, the null score histograms, the heat maps over every condition and `cells_smoke.csv` with every cell |
-| `jpeg/`, `downscale/`, `upscale/`, `crop/`, `shift/`, `letterbox/`, `caption/`, `sticker/`, `brightness/`, `contrast/`, `gamma/`, `rotate/` | One folder per family of sharing actions, with sample strips, the cell table, the robustness curves and the failure breakdown |
+| `summary/` | Quality of the five methods at their native setting and at the common 40 dB point, timing, residual strips, the detection thresholds with their realised false positive rates, the per family thresholds, the null score histograms, the heat maps over every condition and the cell tables with every cell |
+| `jpeg/`, `downscale/`, `upscale/`, `crop/`, `shift/`, `letterbox/`, `caption/`, `sticker/`, `brightness/`, `contrast/`, `gamma/`, `rotate/` | One folder per family of sharing actions, with sample strips, the cell tables, the robustness curves and the failure breakdown |
 | `platform/`, `platform_hires/` | The five platform profiles applied to the 1024 px image and to a simulated 2048 px original |
 | `screenshot/` | The 15 real browser screenshot conditions |
 | `chains/` | The five chains of sharing actions |
@@ -28,5 +28,14 @@ each image gets one label. Survived means rung 1 detects it. Alignment means onl
 it. Recoverable means the estimated realignment rescues it too. Sync failed means the oracle rescues
 it but the estimate does not. Destroyed means not even the oracle rescues it.
 
-Numbers marked `smoke` come from the 50 image smoke subset that every machine can reproduce.
-Numbers from the full 1,000 image run will carry the tag `full` and a checksum file.
+The threshold is set on the pooled null set. Where the null shift check found more than 2 percent of
+unwatermarked images above it after a sharing action, the cells of that family, method and rung also
+carry a threshold set on the 500 null images of that family alone, listed in
+`summary/thresholds_family.csv` and stored in the `tau_family` and `tpr_family` columns of the cell
+tables, marked with a star in the heat maps and with dotted lines in the curves. The pooled number
+stays the primary one everywhere.
+
+Numbers and figures carry a tag. `smoke` is the 50 image smoke subset that every machine can
+reproduce from a clean state. `full` is the 1,000 image run on the VM, verified by the checksums in
+`summary/checksums.txt`. The Figures section of every guide describes the full run, and the smoke
+figures sit next to the full ones with their own tag and are read the same way.

@@ -193,6 +193,23 @@ python -m wmbench.runner.remote pull /home/student/data/work/robust_full_gpu0.js
 The arguments are the manifest, the tag for the output names, the number of GPU shards, at most
 three on a 24 GB card, and the number of CPU shards of three threads each.
 
+With the record files pulled to `data/images/work`, the full run tables, figures, captions and
+LaTeX tables are built on the PC. The null shift table also writes
+`results/summary/thresholds_family.csv`, a threshold per flagged condition, method and rung set
+on the 500 null images of that condition alone, which the cell table carries as extra columns
+next to the pooled numbers.
+
+```sh
+python -m wmbench.quality.quality_table --records data/images/work/quality_full.jsonl --out-dir results/summary --tag full --machine vm
+python -m wmbench.detect.null_shift_table --records data/images/work/null_shift.jsonl
+python -m wmbench.figures.cells --records data/images/work/robust_full_*.jsonl --thresholds results/summary/thresholds.csv --thresholds3 results/summary/thresholds_rung3.csv --thresholds-family results/summary/thresholds_family.csv --tag full
+python -m wmbench.figures.plots --cells results/summary/cells_full.csv --tag full
+python -m wmbench.figures.captions --cells results/summary/cells_full.csv --tag full
+python -m wmbench.figures.tables --cells results/summary/cells_full.csv --tag full
+```
+
+The sha256 of every table written by these commands is in `results/summary/checksums.txt`.
+
 ## Tests
 
 ```sh
