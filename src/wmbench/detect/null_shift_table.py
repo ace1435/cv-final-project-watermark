@@ -70,12 +70,37 @@ def shift_rows(records, thresholds, thresholds3):
     return rows
 
 
+def family_rows(records, shift):
+    rows = []
+    for flagged in [r for r in shift if r["above_2pct"]]:
+        group = [r for r in records if r["condition"] == flagged["condition"] and r["method"] == flagged["method"] and r["rung"] == flagged["rung"]]
+        scores = np.array([r["score"] for r in group])
+        photos = np.array([r["score"] for r in group if r["domain"] == "photo"])
+        screens = np.array([r["score"] for r in group if r["domain"] == "screen"])
+        tau = quantile_threshold(scores, fpr_target)
+        rows.append({
+            "method": flagged["method"],
+            "family": flagged["family"],
+            "condition": flagged["condition"],
+            "rung": flagged["rung"],
+            "n": len(group),
+            "tau_pooled": flagged["tau"],
+            "fpr_pooled": flagged["fpr"],
+            "tau_family": tau,
+            "fpr_family": float((scores >= tau).mean()),
+            "fpr_family_photo": float((photos >= tau).mean()) if len(photos) else float("nan"),
+            "fpr_family_screen": float((screens >= tau).mean()) if len(screens) else float("nan"),
+        })
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--records", nargs="+", required=True)
     parser.add_argument("--thresholds", default="results/summary/thresholds.csv")
     parser.add_argument("--out-rung3", default="results/summary/thresholds_rung3.csv")
     parser.add_argument("--out-shift", default="results/summary/null_shift.csv")
+    parser.add_argument("--out-family", default="results/summary/thresholds_family.csv")
     args = parser.parse_args()
     records = read_records(args.records)
     thresholds = load_thresholds(args.thresholds)
@@ -90,6 +115,11 @@ def main():
     print(f"cells above 2 percent FPR: {len(flagged)} of {len(rows)}")
     for r in flagged[:40]:
         print(f"  {r['condition']:32s} {r['method']:12s} rung {r['rung']} fpr {r['fpr']:.3f} photo {r['fpr_photo']:.3f} screen {r['fpr_screen']:.3f}")
+    family = family_rows(records, rows)
+    if family:
+        write_csv(args.out_family, family)
+    for r in family:
+        print(f"  family threshold {r['family']:12s} {r['method']:12s} rung {r['rung']} tau {r['tau_family']:.4f} fpr {r['fpr_family']:.3f} photo {r['fpr_family_photo']:.3f} screen {r['fpr_family_screen']:.3f}")
 
 
 if __name__ == "__main__":

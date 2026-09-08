@@ -61,6 +61,11 @@ def load_thresholds(path):
         return {r["method"]: float(r["tau_1pct"]) for r in csv.DictReader(f)}
 
 
+def load_family_thresholds(path):
+    with open(path, encoding="utf-8") as f:
+        return {(r["method"], r["family"], int(r["rung"])): float(r["tau_family"]) for r in csv.DictReader(f)}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--records", required=True)
