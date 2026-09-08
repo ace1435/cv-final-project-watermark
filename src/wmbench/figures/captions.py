@@ -223,7 +223,7 @@ def write_section(path, text):
     old = path.read_text(encoding="utf-8") if path.exists() else f"# {path.parent.name}\n\n"
     if marker in old:
         old = old[: old.index(marker)].rstrip() + "\n\n"
-    path.write_text(old + text, encoding="utf-8")
+    path.write_text(old + text, encoding="utf-8", newline="\n")
 
 
 def main():
