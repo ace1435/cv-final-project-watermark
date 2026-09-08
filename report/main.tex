@@ -1,0 +1,112 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[a4paper,margin=18mm,columnsep=6mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\captionsetup{font=small,labelfont=bf}
+\graphicspath{{../results/}}
+\newcommand{\todo}[1]{\textbf{[#1]}}
+
+\title{What Survives a Screenshot? A quality matched robustness benchmark of invisible image watermarks against everyday sharing}
+\author{Roie Zimlichman \and Noam Shaked \and Michael Varshay \and Gilad Kratter \and Rotem Cohen}
+\date{Modern Computer Vision, final project, September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Five sentences. The question, the benchmark in one sentence with its numbers, the fairness step, the headline result with the three numbers that matter, the diagnosis in one sentence.}
+\end{abstract}
+
+\section{Introduction}
+\todo{Why invisible watermarks exist and why everyday sharing, above all screenshots, is the unmeasured case. The claim in the TrustMark documentation that the mark survives screenshots.}
+
+\paragraph{Related work.}
+Watermark benchmarks such as WAVES~\citep{an2024waves} and W-Bench~\citep{lu2024wbench} compare methods at unequal visual quality and do not include screenshots. The Watermark Anything paper~\citep{sander2024wam} and OmniSealBench~\citep{omnisealbench} match baselines at about 38 dB but only for their own baselines. SyncSeal~\citep{fernandez2025syncseal} shows that a synchronisation step repairs geometric failures but does not attribute failures per condition. ScreenMark~\citep{screenmark2025} watermarks the screen rather than the image. The classical separation of removal attacks from geometric attacks that only desynchronise the detector goes back to Voloshynovskiy et al.~\citep{voloshynovskiy2001attacks} and Licks and Jordan~\citep{licks2005geometric}. \todo{One sentence on what is new, real browser screenshots across five post hoc methods at one quality point with an oracle realignment control.}
+
+\paragraph{Contributions.}
+\todo{Three bullets. Fair benchmark on 1,000 images and 75 conditions. First measurement of real browser screenshots across zoom and density. Per cell attribution of failures to alignment or destruction with an oracle and an estimated realignment.}
+
+\section{Method}
+
+\paragraph{Data.}
+1,000 images, 500 photographs from CLIC 2020~\citep{clic2020} and 500 screen images, application screenshots from ScreenSpot-v2~\citep{wu2024osatlas} and ScreenSpot-Pro~\citep{li2025screenspotpro}, web pages from VisualWebBench~\citep{liu2024visualwebbench} and document pages from DocLayNet~\citep{pfitzmann2022doclaynet} and arXiv, all resized to 1024 px on the long side. A disjoint null set of 5,000 unwatermarked images, including DIV2K~\citep{agustsson2017div2k}, sets the thresholds. \todo{One sentence on the 50 image smoke subset if space allows.}
+
+\paragraph{Watermarking methods.}
+DWT-DCT-SVD from the invisible-watermark package~\citep{invisiblewatermark}, TrustMark~\citep{bui2023trustmark}, Watermark Anything~\citep{sander2024wam}, PixelSeal from the VideoSeal family~\citep{fernandez2024videoseal,pixelseal2025} and HiDDeN~\citep{zhu2018hidden} in the 48 bit release of Fernandez et al.~\citep{fernandez2023stablesignature}. Each method runs at its native payload with a fresh random message per image. \todo{Why these five, one sentence.}
+
+\paragraph{Quality matching.}
+Every method is run at the strength its authors ship and at a per image strength that gives 40 dB PSNR, the operating point of Evennou and Kijak~\citep{evennou2026forensic}. \todo{One sentence on the closed form step for additive methods and the step search for the classical one.} Table~\ref{tab:quality} gives the resulting quality and the clean decoding rate.
+
+\begin{table*}[t]
+\centering
+\small
+\input{../results/tables/quality_full.tex}
+\caption{Quality and clean decoding at the native and the matched setting, 1,000 images. PSNR in dB, SSIM~\citep{wang2004ssim}, LPIPS~\citep{zhang2018lpips} and DISTS~\citep{ding2020dists} between cover and watermarked image, bit accuracy on the untouched image and the analytic detection rate. \todo{Shorten if space is tight.}}
+\label{tab:quality}
+\end{table*}
+
+\paragraph{Sharing actions.}
+75 conditions in 16 families. 45 single actions, JPEG, downscale, upscale, crop, shift, letterbox, caption, sticker, brightness, contrast, gamma and rotation at realistic levels plus one harsh level. Five platform profiles that reduce to the JPEG quality of Telegram, X, WhatsApp, Instagram and Facebook, and the same five on a simulated 2048 px original. 15 real screenshots rendered by headless Chromium through Playwright~\citep{playwright} at browser zooms from 90 to 150 percent, Windows display scaling, a Mac retina screen and two phones, a partial screenshot and the browser JPEG. Five chains of these. Every action records its exact parameters and an inverse into the original pixel grid. \todo{Trim to fit.}
+
+\paragraph{Detection protocol.}
+The score is the matched filter between the decoder logits and the embedded message. The threshold per method is the value that 1 percent of the 5,000 null images exceed, so every rate is a TPR at 1 percent FPR with a Wilson interval~\citep{wilson1927}. Every image is decoded three times. Rung 1 as received. Rung 2 after the oracle undoes the recorded geometry and fills lost regions with the unwatermarked cover. Rung 3 after the geometry is estimated from the received image and the original with DISK keypoints~\citep{tyszkiewicz2020disk}, LightGlue~\citep{lindenberger2023lightglue} in Kornia~\citep{riba2020kornia} and an ECC refinement~\citep{evangelidis2008ecc}. A failure at rung 1 that rung 2 repairs is an alignment failure, a failure that even the oracle cannot repair is destruction. Rung 3 uses its own threshold from realigned null images, and families where a sharing action pushed more than 2 percent of null images over the threshold also carry a per family threshold.
+
+\section{Results}
+
+\begin{table*}[t]
+\centering
+\small
+\input{../results/tables/headline_full.tex}
+\caption{Mean TPR at 1 percent FPR over the 75 conditions at the three rungs and the mean share of images per failure label, 1,000 images at 40 dB.}
+\label{tab:headline}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{summary/heatmap_rung1_full.png}
+\caption{TPR at 1 percent FPR as received, every method under every condition, 1,000 images at 40 dB. A star marks a cell that also carries a per family threshold. \todo{Consider showing the rung 2 minus rung 1 map instead, or both at half height.}}
+\label{fig:heatmap}
+\end{figure*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{screenshot/curves_tpr_full.png}
+\caption{Real browser screenshots. TPR at 1 percent FPR per condition, solid as received, dashed after the oracle realignment, shaded the 95 percent Wilson interval.}
+\label{fig:screenshot}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{crop/curves_tpr_full.png}
+\caption{Crops. TrustMark fails below half the area as received and is fully restored by realignment, HiDDeN reads lower after realignment because the pasted cover dilutes its full canvas decoder.}
+\label{fig:crop}
+\end{figure}
+
+\paragraph{Headline.}
+\todo{Table~\ref{tab:headline}. Watermark Anything and PixelSeal 1.00 as received, TrustMark 0.96, HiDDeN 0.79, DWT-DCT-SVD 0.26, and after the oracle 1.00, 1.00, 1.00, 0.86, 0.68.}
+
+\paragraph{Screenshots.}
+\todo{Figure~\ref{fig:screenshot}. The three modern methods read 1.00 under every screenshot. HiDDeN degrades with the effective scale and is restored by the oracle. The classical method reads 0.01 under every resampling and 0.78 to 0.83 after the oracle, so the screenshot hides the mark rather than destroying it.}
+
+\paragraph{Alignment versus destruction.}
+\todo{Where the rung 1 to rung 2 gap sits. TrustMark five geometric cells. HiDDeN enlargement only. The classical method every geometric condition. The estimated realignment closes the gaps to within 0.02 except two classical cells.}
+
+\paragraph{Photos versus screens.}
+\todo{The classical method reads lower on screens wherever its mark is weak and higher under darkening, TrustMark and HiDDeN lose on screens under brightening. Numbers from the domains table.}
+
+\section{Discussion}
+\todo{What the ranking means at equal quality, the price of matching for HiDDeN and the classical method, where a synchroniser would pay and where it would not, the recalibration result.}
+
+\paragraph{Limitations.}
+The screenshot conditions come from a real Chromium renderer validated against simulation, and screenshots from operating system tools, phones and messaging apps were not collected. The platform qualities for WhatsApp, Instagram and Facebook are estimates covered by a sensitivity sweep. All images are 1024 px wide and every method is compared at one quality point. \todo{One sentence on Phase 2 if it was started.}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

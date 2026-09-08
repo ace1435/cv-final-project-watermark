@@ -58,12 +58,13 @@ def main():
     parser.add_argument("--count", type=int, default=500)
     parser.add_argument("--methods", nargs="*", default=primaries)
     parser.add_argument("--shard", default="0/1")
+    parser.add_argument("--registration", default="")
     args = parser.parse_args()
     rows = read_rows(args.manifest)
     rng = np.random.default_rng(seeds["sample_null"])
     chosen = [rows[i] for i in sorted(rng.choice(len(rows), size=args.count, replace=False))]
     conds = pick_conditions()
-    cache_path = str(Path(args.out).with_suffix(".registration.jsonl"))
+    cache_path = args.registration or str(Path(args.out).with_suffix(".registration.jsonl"))
     cache = load_cache(cache_path)
     print(f"{len(chosen)} null images, {len(conds)} conditions, cached registrations {len(cache)}", flush=True)
     for name in args.methods:
