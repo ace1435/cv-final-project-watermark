@@ -73,6 +73,7 @@ step preprocess_smoke python data/preprocess.py --manifest data/manifests/smoke.
 step preprocess_null python data/preprocess.py --manifest data/manifests/null.csv --data-root "$root" --workers 32
 git diff --stat data/manifests > "$logs/manifest_diff.txt"
 say "manifest diff after preprocessing, $(wc -l < "$logs/manifest_diff.txt") lines, empty means every pixel checksum matched"
+ln -sfn "$root" data/images
 step tests python -m pytest -q
 
 step quality python -m wmbench.quality.quality_run --manifest data/manifests/smoke.csv --data-root "$root" --out "$work/quality_smoke.jsonl"

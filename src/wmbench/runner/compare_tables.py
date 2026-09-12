@@ -2,6 +2,8 @@ import argparse
 import csv
 from pathlib import Path
 
+id_columns = ("rung", "level", "q")
+
 
 def read(path):
     with open(path, encoding="utf-8") as f:
@@ -23,7 +25,7 @@ def compare(a_path, b_path, keys):
     a = read(a_path)
     b = read(b_path)
     if not keys:
-        keys = [k for k in a[0] if as_float(a[0][k]) is None]
+        keys = [k for k in a[0] if as_float(a[0][k]) is None or k in id_columns]
     b_by = {key_of(r, keys): r for r in b}
     columns = [k for k in a[0] if k not in keys]
     worst = {c: 0.0 for c in columns}
