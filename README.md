@@ -17,6 +17,7 @@ is reported as TPR at an empirical 1 percent FPR from a large set of unwatermark
 | `src/wmbench/` | The benchmark package |
 | `tests/` | Fast tests that run on a laptop in under two minutes |
 | `results/` | Every number, figure and table the report uses |
+| `report/` | The LaTeX skeleton of the report and its bibliography, with the figures and tables included from `results/` |
 
 ## Environment
 
