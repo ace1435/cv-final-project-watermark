@@ -20,6 +20,8 @@ def read_records(path):
 def rows_for(records):
     groups = defaultdict(list)
     for r in records:
+        if r.get("rung", 1) != 1:
+            continue
         groups[(r["method"], r["condition"])].append(r)
     rows = []
     for method in primaries:

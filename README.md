@@ -17,6 +17,7 @@ is reported as TPR at an empirical 1 percent FPR from a large set of unwatermark
 | `src/wmbench/` | The benchmark package |
 | `tests/` | Fast tests that run on a laptop in under two minutes |
 | `results/` | Every number, figure and table the report uses |
+| `report/` | The LaTeX skeleton of the report and its bibliography, with the figures and tables included from `results/` |
 
 ## Environment
 
@@ -131,10 +132,12 @@ a CPU, most of it decoding. The screenshot conditions need Chromium, which `setu
 
 ## Real device screenshots
 
-`python -m wmbench.runner.real_sheet --out <folder>` writes the 100 file sheet that teammates
-screenshot on their own devices, and `python -m wmbench.runner.real_ingest --folder <drop>
---quality <records> --out <jsonl> --summary <csv>` decodes whatever comes back, matching files by
-their `<method>__<image>` names and grouping by the person and device folders.
+`python -m wmbench.runner.real_sheet --out <folder>` writes a 100 file sheet of watermarked
+images for screenshots taken on real devices, and `python -m wmbench.runner.real_ingest --folder
+<drop> --quality <records> --out <jsonl> --summary <csv>` decodes a folder of such screenshots,
+matching files by their `<method>__<image>` names and grouping by the person and device folders.
+No real device screenshots were collected in this project, the tools exist for anyone who wants
+to add them.
 
 ## Detection and realignment
 
@@ -209,6 +212,39 @@ python -m wmbench.figures.tables --cells results/summary/cells_full.csv --tag fu
 ```
 
 The sha256 of every table written by these commands is in `results/summary/checksums.txt`.
+
+## Reproducing from a fresh clone
+
+`environment/reproduce_smoke.sh` runs every smoke command of this README in order from a fresh
+clone into a fresh data root and compares what comes out with the committed tables. It reuses the
+Python environment and the downloaded source archives and models of an existing setup, which it
+links into the new data root, and rebuilds everything else, the vendored Watermark Anything code,
+the preprocessed images, the quality run, the residual and transform strips, the null decode and
+thresholds, the platform sweep, the calibration, the robustness run at three rungs, the null shift
+check, the cell tables, the figures and the captions. On the VM
+
+```sh
+git clone /home/student/repo.git /home/student/repro_check
+cd /home/student/repro_check
+bash environment/reproduce_smoke.sh /home/student/repro_check /home/student/repro_data /home/student/data /home/student/venv
+```
+
+writes one log per step under `/home/student/repro_data/logs`, `compare_tables.txt` with the
+largest numeric difference per table against the committed ones, `changed_files.txt` with every
+committed result file the rebuild changed, and `repro.done` or `repro.failed` at the end. The
+tables from a GPU rebuild agree with the committed ones within the float noise of the decoders,
+the committed smoke quality numbers come from the CPU run on the PC. `python -m
+wmbench.runner.compare_tables <dir a> <dir b> --tolerance 0.02` runs the same comparison between
+any two result folders.
+
+## Cleanup
+
+`sh cleanup.sh` lists the regenerable folders under the data root and their sizes and deletes
+nothing. `sh cleanup.sh --yes` deletes the job outputs, the derived images and the vendored code.
+`sh cleanup.sh --all --yes` also deletes the preprocessed splits, the models and the source
+archives, which the download and preprocessing commands rebuild. `--data-root=PATH` selects
+another data root, the default is `data/images`. Manifests, configs, code and results are never
+touched.
 
 ## Tests
 
