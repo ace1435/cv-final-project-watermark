@@ -27,8 +27,6 @@ tectonic main.tex
 ## Before submission
 
 - Replace every `\todo{...}` and remove the `\todo` definition.
-- Three bibliography entries carry a note to verify the author list, PixelSeal, ScreenMark and
-  the entries written with `and others`. Check them against the papers.
 - The heat map is a full width figure. If space is short, swap it for the rung 2 minus rung 1
   map or crop the page to two of the four blocks in the results folder.
 - The quality table is the full one from `results/tables/quality_full.tex`. The tables
