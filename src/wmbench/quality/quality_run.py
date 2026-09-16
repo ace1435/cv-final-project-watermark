@@ -9,7 +9,7 @@ from PIL import Image
 from wmbench.detect.analytic import matched_filter, matches
 from wmbench.manifest import read_rows
 from wmbench.quality.match import match
-from wmbench.quality.metrics import psnr, scorer
+from wmbench.quality.metrics import scorer
 from wmbench.runner.jobs import run_items
 from wmbench.watermarkers import load, primaries
 from wmbench.watermarkers.common import root
