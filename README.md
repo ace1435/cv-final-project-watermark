@@ -274,7 +274,16 @@ The four arguments are positional and each has the VM default shown in the examp
 is the directory of the code copy the check runs from. `ROOT` is the new data root that receives
 the preprocessed images, the job outputs and the logs. `SHARED` is an existing data root whose
 `sources` and `models` folders are linked into `ROOT`, so that archives and weights downloaded once
-are reused. `VENV` is the Python environment to activate. On the VM the call is
+are reused. `VENV` is the Python environment to activate. For a reader who followed the manual setup section, with the code in the current directory, the
+environment at `.venv` and a new data root under the home folder, the shared root is the data root
+of the manual setup section, so the model files are not downloaded twice. The call is
+
+```sh
+mkdir -p data/images/sources
+bash environment/reproduce_smoke.sh "$PWD" ~/repro_data "$PWD/data/images" "$PWD/.venv"
+```
+
+On the VM the call is
 
 ```sh
 git clone /home/student/repo.git /home/student/repro_check
