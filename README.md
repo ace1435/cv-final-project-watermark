@@ -38,6 +38,45 @@ sh environment/setup_vm.sh vm28 vm28admin vm
 Warnings raised by our own code are errors. Warnings from third party libraries are silenced one at
 a time in `environment/warning_filters.py`, each with the library, the message pattern and the reason.
 
+### Manual setup on any Linux machine
+
+The commands below are what the two setup scripts do, for a reader who downloaded the code and
+runs neither of them. They work from a clone and from an unpacked ZIP alike. Even when the code came from a
+ZIP, git must be installed, because two dependencies are fetched from GitHub by commit, the
+VideoSeal package during the requirements install and the Watermark Anything code below. Run them
+in order from the repository root.
+
+```sh
+sudo apt-get install -y python3-venv python3-pip unzip tmux git libgl1 libglib2.0-0
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install torch==2.14.0+cu126 torchvision==0.29.0+cu126 --index-url https://download.pytorch.org/whl/cu126
+python -m pip install -r environment/requirements.txt
+python -m pip install -e .
+playwright install chromium
+sudo .venv/bin/playwright install-deps chromium
+git clone https://github.com/facebookresearch/watermark-anything third_party/watermark_anything
+git -C third_party/watermark_anything checkout $(cat environment/wam_commit.txt)
+python environment/download_models.py --root data/images/models
+```
+
+The torch line installs the CUDA 12.6 build from the PyTorch index before the requirements, because
+the default PyPI wheel may need a newer driver than the machine has and every number in this
+repository comes from the cu126 build. A driver too old for CUDA 12.6 needs the newest CUDA build the
+PyTorch index offers for that driver, in both places of that line, and the results may then differ slightly. The requirements pin torch 2.14.0
+without a CUDA suffix, so pip keeps whichever build is already installed. The model download fetches
+about 1.8 GB and checks every file against the checksum in `configs/models.yaml`.
+
+On a machine without a GPU, or to force the CPU on a machine with one, set `WMBENCH_DEVICE=cpu`
+in the environment. Every smoke command in this README then runs on the CPU with no other change.
+The quality run takes about 40 minutes, the platform sweep under an hour, the calibration about two
+and a half hours, and the robustness run at three rungs most of a day, because the image
+registration costs about 5 s per image and condition on the CPU. The thresholds are read from the
+committed `results/summary/thresholds.csv` and `thresholds_rung3.csv`, so the 5,000 image null set
+is not needed for any smoke command. Recomputing the thresholds themselves needs the null set and took
+about three hours on the VM's GPU.
+
 ## Data
 
 Sources, licenses and checksums live in `configs/datasets.yaml` and `data/manifests/sources.csv`.
@@ -128,7 +167,8 @@ python -m wmbench.transforms.calibration --quality data/images/work/quality_smok
 
 The calibration writes `results/calibration/screenshots_smoke.csv` and takes about two hours on
 a CPU, most of it decoding. The screenshot conditions need Chromium, which `setup_pc.ps1` and
-`setup_vm.sh` install.
+`setup_vm.sh` install. Without `playwright install chromium` the screenshot conditions and the
+calibration cannot run and the screenshot tests skip.
 
 ## Real device screenshots
 
@@ -213,15 +253,28 @@ python -m wmbench.figures.tables --cells results/summary/cells_full.csv --tag fu
 
 The sha256 of every table written by these commands is in `results/summary/checksums.txt`.
 
-## Reproducing from a fresh clone
+## Reproducing from a fresh copy
 
 `environment/reproduce_smoke.sh` runs every smoke command of this README in order from a fresh
-clone into a fresh data root and compares what comes out with the committed tables. It reuses the
-Python environment and the downloaded source archives and models of an existing setup, which it
-links into the new data root, and rebuilds everything else, the vendored Watermark Anything code,
-the preprocessed images, the quality run, the residual and transform strips, the null decode and
+copy of the code into a fresh data root and compares what comes out with the committed tables. It
+links the `sources` and `models` folders of a shared data root into the new root, downloads into
+them whatever is missing, and rebuilds everything else, the vendored Watermark Anything code, the
+preprocessed images, the quality run, the residual and transform strips, the null decode and
 thresholds, the platform sweep, the calibration, the robustness run at three rungs, the null shift
-check, the cell tables, the figures and the captions. On the VM
+check, the cell tables, the figures and the captions. It needs the Python environment of the
+section above, with Chromium, and a GPU for a run of about four hours.
+
+Start from a clone of the GitHub repository or from an unpacked ZIP, then
+
+```sh
+bash environment/reproduce_smoke.sh CLONE ROOT SHARED VENV
+```
+
+The four arguments are positional and each has the VM default shown in the example below. `CLONE`
+is the directory of the code copy the check runs from. `ROOT` is the new data root that receives
+the preprocessed images, the job outputs and the logs. `SHARED` is an existing data root whose
+`sources` and `models` folders are linked into `ROOT`, so that archives and weights downloaded once
+are reused. `VENV` is the Python environment to activate. On the VM the call is
 
 ```sh
 git clone /home/student/repo.git /home/student/repro_check
@@ -229,11 +282,19 @@ cd /home/student/repro_check
 bash environment/reproduce_smoke.sh /home/student/repro_check /home/student/repro_data /home/student/data /home/student/venv
 ```
 
-writes one log per step under `/home/student/repro_data/logs`, `compare_tables.txt` with the
-largest numeric difference per table against the committed ones, `changed_files.txt` with every
-committed result file the rebuild changed, and `repro.done` or `repro.failed` at the end. The
-tables from a GPU rebuild agree with the committed ones within the float noise of the decoders,
-the committed smoke quality numbers come from the CPU run on the PC. `python -m
+A machine with nothing creates the two shared folders first, `mkdir -p SHARED/sources
+SHARED/models`, and the script then downloads into them the source archives the smoke and null
+manifests reference, about 18 GB, and the model files, about 1.8 GB. With the folders already
+filled the check downloads nothing.
+
+The script writes one log per step under `ROOT/logs`, `compare_tables.txt` with the largest
+numeric difference per table against the committed ones, `changed_files.txt` with every committed
+result file the rebuild changed, `manifest_diff.txt` which is empty when every pixel checksum
+matched, and `repro.done` or `repro.failed` at the end. On a copy without a `.git` folder the
+manifest diff and the changed files outputs are empty and the comparison in `compare_tables.txt` is
+unaffected, because the committed tables are copied aside before anything is rebuilt. The tables
+from a GPU rebuild agree with the committed ones within the float noise of the decoders, the
+committed smoke quality numbers come from the CPU run on the PC. `python -m
 wmbench.runner.compare_tables <dir a> <dir b> --tolerance 0.02` runs the same comparison between
 any two result folders.
 
