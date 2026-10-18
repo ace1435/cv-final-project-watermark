@@ -1,34 +1,18 @@
-# Report skeleton
+# Report
 
-`main.tex` is the two column skeleton of the two to three page report with the section
-structure the course asks for, abstract, introduction with related work, method, results and
-discussion. The figures and tables are included from `../results/` so that a regenerated result
-lands in the report without editing. `references.bib` holds every method, dataset, tool and
-prior benchmark the text cites.
+`main.tex` is the source of the submitted two column report, with abstract, introduction with related work, method, results and discussion. `references.bib` holds every work it cites. Every number in the report comes from the committed results, and unless the text names another file it is a row of `results/summary/cells_full.csv`.
 
-Every place that needs prose is marked with `\todo{...}`, which prints in bold, and says what
-the sentence should carry. The team writes the text, the numbers to quote are in the figure
-captions, the tables and the guides under `results/`.
+## Figures
+
+The report expects its two figures in a `figures/` folder next to `main.tex`, which is not committed because both come from the results folder.
+
+- `figures/curves_tpr_full_screenshot.png` is a copy of `results/screenshot/curves_tpr_full.png`.
+- `figures/heatmap_rung1_two_blocks.png` is the first and the last of the four condition blocks of `results/summary/heatmap_rung1_full.png`, cropped without resampling, with the colour bar.
 
 ## Build
 
-From this folder, with any TeX distribution that has natbib, booktabs and hyperref.
+From this folder, with the two figures in place and any TeX distribution that has natbib, booktabs and hyperref.
 
 ```sh
 pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
-
-or with tectonic, which fetches the packages it needs on first use.
-
-```sh
-tectonic main.tex
-```
-
-## Before submission
-
-- Replace every `\todo{...}` and remove the `\todo` definition.
-- The heat map is a full width figure. If space is short, swap it for the rung 2 minus rung 1
-  map or crop the page to two of the four blocks in the results folder.
-- The quality table is the full one from `results/tables/quality_full.tex`. The tables
-  `families_full.tex`, `domains_full.tex`, `conditions_full.tex` and `thresholds_family.tex` are
-  ready to include in the same way if space allows.
