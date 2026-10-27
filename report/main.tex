@@ -14,7 +14,7 @@
 \setlength{\floatsep}{6pt plus 2pt minus 2pt}
 \newcommand{\rf}[1]{\texttt{\small #1}}
 
-\title{What Survives a Screenshot? A quality matched robustness benchmark of invisible image watermarks against everyday sharing}
+\title{\textbf{What Survives a Screenshot? A quality matched robustness benchmark of invisible image watermarks against everyday sharing}}
 \author{Roie Zimlichman \and Noam Shaked \and Michael Varshay \and Gilad Kratter \and Rotem Cohen}
 \date{Modern Computer Vision, final project, October 2026}
 
@@ -42,9 +42,7 @@ The benchmark evaluates five distinct post-hoc watermarking models: DWT-DCT-SVD 
 Out of the box, the models alter images to differing degrees, producing native visibilities ranging from 33 dB PSNR (HiDDeN) to 47 dB PSNR (PixelSeal). To ensure a fair evaluation, every method was calibrated to a uniform visual volume of 40 dB PSNR per image prior to testing, the operating point also used by Evennou and Kijak \cite{evennou2026forensic}. For the four neural methods, the strength knob was adjusted directly until the image hit the 40 dB target. For the classical DWT-DCT-SVD method, its quantisation step was searched per image, and because finer steps stop decoding it reaches 39.0 dB on average. While matching is mathematically free for TrustMark, Watermark Anything, and PixelSeal, it causes HiDDeN to lose one bit in ten before any sharing actions are applied, clean bit accuracy 0.977 to 0.900 (\rf{results/tables/quality\_full.tex}).
 
 \paragraph{Detection protocol.}
-Performance is measured as the True Positive Rate (TPR) at a 1\% False Positive Rate (FPR), reported with 95\% Wilson intervals \cite{wilson1927}. The threshold is the 99th percentile of the null scores per method and per rung.
-
-To distinguish whether a missing watermark was destroyed or merely misaligned, each image is decoded three times across distinct ``rungs''. Rung 1 decodes the shared image exactly as it is received. Rung 2 performs a perfect undo, filling regions lost to a crop with the unwatermarked cover. Rung 3 performs a practical undo, estimating the geometry from the received image and the original with DISK \cite{tyszkiewicz2020disk} and LightGlue \cite{lindenberger2023lightglue} keypoints, a RANSAC similarity fit and an ECC refinement~\cite{evangelidis2008ecc}, and uses its own threshold from realigned null images. Where a sharing action pushed more than 2 percent of null images over the threshold, the cell also carries a per family threshold. A mark lost at rung 1 but found at rung 2 is an alignment failure (the reader just lost track of where it sits), whereas a mark lost even at rung 2 has been completely destroyed.
+Performance is measured as the True Positive Rate (TPR) at a 1\% False Positive Rate (FPR), reported with 95\% Wilson intervals \cite{wilson1927}. The threshold is the 99th percentile of the null scores per method and per rung.To distinguish whether a missing watermark was destroyed or merely misaligned, each image is decoded three times across distinct ``rungs''. Rung 1 decodes the shared image exactly as it is received. Rung 2 performs a perfect undo, filling regions lost to a crop with the unwatermarked cover. Rung 3 performs a practical undo, estimating the geometry from the received image and the original with DISK \cite{tyszkiewicz2020disk} and LightGlue \cite{lindenberger2023lightglue} keypoints, a RANSAC similarity fit and an ECC refinement~\cite{evangelidis2008ecc}, and uses its own threshold from realigned null images. Where a sharing action pushed more than 2 percent of null images over the threshold, the cell also carries a per family threshold. A mark lost at rung 1 but found at rung 2 is an alignment failure (the reader just lost track of where it sits), whereas a mark lost even at rung 2 has been completely destroyed.
 
 \paragraph{Sharing actions.}
 The pipeline tests 75 conditions grouped into 16 families, recording the exact parameters of each action and its inverse in order to reconstruct the image in rung 2. The set includes 45 single algorithmic transformations, such as JPEG compression, cropping, spatial shifts, letterboxing, and tone adjustments, and ten platform profiles that reproduce the resize and JPEG quality of Telegram, X, WhatsApp, Instagram and Facebook, on our images and on a 2048 px upscaled version of them. It adds 15 real browser screenshots generated via a headless Chromium engine \cite{playwright}. Finally, the pipeline evaluates five composite chains, which string multiple actions together to simulate multi-step sharing workflows.
@@ -68,7 +66,6 @@ Code, data manifests, all results and all figures are in the public repository \
 \end{figure*}
 
 Unless marked as smoke subset, all numbers in this section are from the full run on the 1,000 images. Table~\ref{tab:mean_TPR_table} gives the means and Figure~\ref{fig:heatmap} gives the cells.
-
 DWT-DCT-SVD reads 0.00 to 0.02 under every downscale, upscale, crop, rotation of 3 degrees or more, shift of 8 pixels or more, and every real screenshot except the bit exact control, where it reads 0.85. The perfect undo lifts those cells to 0.60 to 0.85 and the practical undo to 0.47 to 0.83, the 30 percent crop excepted, which stays at 0.13 after the perfect undo.
 HiDDeN reads 0.95 at crop 0.3 as received and 0.71 after the perfect undo, 0.48 and 0.31 on the phone to Instagram chain. 
 No other method loses more than 0.04 in any cell after the undo. 
@@ -78,7 +75,6 @@ The oracle restores all four to 1.00 and the estimated realignment to 0.99 or 1.
 
 \paragraph{Screenshots.} 
 Three methods score 1.00 under every one of the 15 real screenshots (Figure~\ref{fig:screenshot}). HiDDeN falls to 0.25 on the retina screen and returns to 0.97 after the undo. The classical method reads 0.01 under every screenshot and 0.78 to 0.83 after the undo, 0.60 when the screenshot is saved as JPEG. On the 50 image smoke subset, a browser free simulation of the same resampling and the real browser gave the same detection answer in 66 of the 75 screenshot, method and rung cells (\rf{results/calibration/screenshots\_smoke.csv}).
-
 The practical undo registered 74,980 of 75,000 pairs with a median error of 0.13 px and trails the perfect undo by more than 0.1 in two
 classical cells only, the quarter size downscale and the 20 percent caption band.
 
